@@ -9,69 +9,829 @@
     :root{--green:#14532d;--lime:#22c55e;--ink:#101a17;--muted:#66736c;--paper:#f5f3ec;--line:#dfe5df;--red:#b42318;--gold:#d99025}
     *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,-apple-system,sans-serif}button,input,select{font:inherit}button{cursor:pointer}
     .top{background:var(--green);color:#fff;position:sticky;top:0;z-index:5;box-shadow:0 2px 14px #10281855}.bar{max-width:1240px;margin:auto;padding:18px 22px;display:flex;gap:28px;align-items:center;justify-content:space-between}.brand{font-weight:800;letter-spacing:.04em;white-space:nowrap}.brand small{display:block;color:#b8e6be;font-weight:500;letter-spacing:0}.nav{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.nav button{border:0;background:transparent;color:#d9f4dc;padding:8px 11px;border-radius:7px}.nav button:hover,.nav button.active{background:#ffffff20;color:#fff}.status{font-size:12px;background:#ffffff15;padding:5px 9px;border-radius:99px;white-space:nowrap}.status.ok{color:#b7f7c0}.status.bad{color:#ffd0ca}
-    main{max-width:1240px;margin:auto;padding:34px 22px 70px}.view{display:none}.view.active{display:block;animation:up .25s ease}.hero{background:linear-gradient(120deg,#14532d,#286c3e 55%,#d99025);color:#fff;padding:42px;border-radius:14px;margin-bottom:24px}.hero h1{font-size:clamp(2rem,5vw,4rem);line-height:1;margin:0 0 14px;max-width:700px}.hero p{max-width:620px;color:#e2f3e3}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;box-shadow:0 5px 20px #18352309;margin-bottom:18px}.card h2,.card h3{margin:0 0 12px}.eyebrow{color:var(--gold);font-weight:800;text-transform:uppercase;font-size:12px;letter-spacing:.12em}.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px}.field{display:grid;gap:5px;margin-bottom:12px}.field label{font-size:13px;font-weight:700;color:#46544b}.field input,.field select{width:100%;padding:10px;border:1px solid #cbd7ce;border-radius:6px;background:#fff;color:var(--ink)}.field input:focus,.field select:focus,button:focus{outline:3px solid #22c55e55;outline-offset:2px}.btn{border:0;border-radius:6px;padding:10px 15px;background:var(--green);color:#fff;font-weight:700}.btn:hover{filter:brightness(1.12)}.btn.alt{background:#edf6ed;color:var(--green);border:1px solid #b9d8bc}.btn.warn{background:var(--red)}.actions{display:flex;gap:8px;flex-wrap:wrap}.msg{min-height:22px;color:var(--red);font-weight:600;margin:8px 0 0}.msg.ok{color:var(--green)}.tablewrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:620px}.table th,.table td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);vertical-align:middle}.table th{font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.05em}.empty{text-align:center;color:var(--muted);padding:24px}.metric{font-size:2rem;font-weight:800;color:var(--green)}.product{display:flex;justify-content:space-between;gap:12px;align-items:center;border:1px solid var(--line);padding:14px;border-radius:8px}.product strong{display:block}.money{font-weight:800;color:var(--green);white-space:nowrap}.detail{border-left:4px solid var(--lime)}.list{padding-left:20px}.tag{font-size:12px;border-radius:99px;background:#edf2ed;padding:3px 8px}.tag.pending{color:#8a5b00;background:#fff3d5}.tag.active{color:var(--green);background:#dff5e2}.tag.open{color:#8a5b00;background:#fff3d5}.tag.paid{color:var(--green);background:#dff5e2}
+    main{max-width:1240px;margin:auto;padding:34px 22px 70px}.view{display:none}.view.active{display:block;animation:up .25s ease}.hero{background:linear-gradient(120deg,#14532d,#286c3e 55%,#d99025);color:#fff;padding:42px;border-radius:14px;margin-bottom:24px}.hero h1{font-size:clamp(2rem,5vw,4rem);line-height:1;margin:0 0 14px;max-width:700px}.hero p{max-width:620px;color:#e2f3e3}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;box-shadow:0 5px 20px #18352309;margin-bottom:18px}.card h2,.card h3{margin:0 0 12px}.eyebrow{color:var(--gold);font-weight:800;text-transform:uppercase;font-size:12px;letter-spacing:.12em}.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px}.field{display:grid;gap:5px;margin-bottom:12px}.field label{font-size:13px;font-weight:700;color:#46544b}.field input,.field select{width:100%;padding:10px;border:1px solid #cbd7ce;border-radius:6px;background:#fff;color:var(--ink)}.field input:focus,.field select:focus,button:focus{outline:3px solid #22c55e55;outline-offset:2px}.btn{border:0;border-radius:6px;padding:10px 15px;background:var(--green);color:#fff;font-weight:700}.btn:hover{filter:brightness(1.12)}.btn.alt{background:#edf6ed;color:var(--green);border:1px solid #b9d8bc}.btn.warn{background:var(--red)}.actions{display:flex;gap:8px;flex-wrap:wrap}.msg{min-height:22px;color:var(--red);font-weight:600;margin:8px 0 0}.msg.ok{color:var(--green)}.tablewrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:620px}.table th,.table td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);vertical-align:middle}.table th{font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.05em}.empty{text-align:center;color:var(--muted);padding:24px}.metric{font-size:2rem;font-weight:800;color:var(--green)}.product{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fafcf9;margin-bottom:12px}.list{margin:0;padding-left:18px}.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;text-transform:capitalize}.tag.pending{background:#fef3c7;color:#854d0e}.tag.active{background:#dcfce7;color:#166534}.tag.occassion,.tag.occasion{background:#fee2e2;color:#991b1b}.tag.neu{background:#e0f2fe;color:#075985}.money{font-weight:700;color:var(--green)}
     @keyframes up{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}@media(max-width:760px){.bar{align-items:flex-start;flex-direction:column;gap:12px}.nav{justify-content:flex-start}.hero{padding:28px 22px}main{padding:22px 14px 50px}}
   </style>
 </head>
 <body>
-  <header class="top"><div class="bar"><div class="brand">GNADENTAL<small>LS25 ROLEPLAY</small></div><div id="connection" class="status">Supabase wird verbunden ...</div><nav class="nav" aria-label="Hauptnavigation">
-    <button class="active" data-view="home">Start</button><button data-view="citizens">Bürger</button><button data-view="companies">Unternehmen</button><button data-view="bank">Banking</button><button data-view="vehicles">Fahrzeuge</button><button data-view="logistics">Logistik</button><button data-view="catalog">Katalog</button><button data-view="admin">Admin</button>
-  </nav></div></header>
+  <header class="top">
+    <div class="bar">
+      <div class="brand">GNADENTAL<small>LS25 ROLEPLAY</small></div>
+      <div id="connection" class="status">Supabase wird verbunden ...</div>
+      <nav class="nav" aria-label="Hauptnavigation">
+        <button class="active" data-view="home">Start</button>
+        <button data-view="citizens">Bürger</button>
+        <button data-view="companies">Unternehmen</button>
+        <button data-view="bank">Banking</button>
+        <button data-view="vehicles">Fahrzeuge</button>
+        <button data-view="logistics">Logistik</button>
+        <button data-view="catalog">Katalog</button>
+        <button data-view="admin">Admin</button>
+      </nav>
+    </div>
+  </header>
+
   <main>
-    <section id="home" class="view active"><div class="hero"><div class="eyebrow">Willkommen in Gnadental</div><h1>Dein Hof. Deine Stadt. Deine Geschichte.</h1><p>Die zentrale Verwaltung für Bürger, Unternehmen, Fahrzeuge, Banking und Handel im Gnadental Roleplay.</p><button class="btn" data-go="citizens">Bürger registrieren</button></div><div class="grid"><div class="card"><div class="eyebrow">Server</div><h2>Gnadental LS25</h2><p>Wirtschaftsstatus: <strong>Stabil</strong></p><p>Letzter Datenabgleich: <span id="last-sync">-</span></p></div><div class="card"><div class="eyebrow">Aktueller Bestand</div><div class="grid"><div><div class="metric" id="citizen-count">0</div><small>Bürger</small></div><div><div class="metric" id="vehicle-count">0</div><small>Fahrzeuge</small></div><div><div class="metric" id="order-count">-</div><small>Bestellungen</small></div></div></div></div></section>
-    <section id="citizens" class="view"><div class="grid"><div class="card"><div class="eyebrow">Meldeamt</div><h2>Bürger registrieren</h2><form id="citizen-form"><div class="formgrid"><div class="field"><label for="first_name">Vorname</label><input id="first_name" name="first_name" required maxlength="60"></div><div class="field"><label for="last_name">Nachname</label><input id="last_name" name="last_name" required maxlength="60"></div><div class="field"><label for="birthdate">Geburtsdatum</label><input id="birthdate" name="birthdate" type="date" required></div></div><button class="btn">Bürger-ID erzeugen</button></form><p id="citizen-msg" class="msg" role="status"></p></div><div class="card detail"><h2>Bürgerakte</h2><div id="citizen-detail" class="empty">Wähle einen Bürger aus der Liste.</div></div></div><div class="card"><h2>Bürgerliste</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Name</th><th>Geburtsdatum</th><th>Aktion</th></tr></thead><tbody id="citizen-rows"></tbody></table></div></div></section>
-    <section id="companies" class="view"><div class="card"><div class="eyebrow">Gewerbeamt</div><h2>Unternehmen anmelden</h2><form id="company-form"><div class="formgrid"><div class="field"><label>Unternehmensname</label><input name="company_name" required maxlength="100"></div><div class="field"><label>Inhaber Bürger-ID</label><input name="owner_citizen_id" placeholder="CIT-XXXX"></div><div class="field"><label>Bereich</label><select name="sector"><option>Landwirtschaft</option><option>Transport</option><option>Logistik</option><option>Werkstatt</option><option>Handel</option><option>Polizei</option></select></div><div class="field"><label>Beschreibung</label><input name="description" maxlength="240"></div></div><button class="btn">Antrag einreichen</button></form><p id="company-msg" class="msg"></p></div><div class="card"><h2>Unternehmen</h2><div class="tablewrap"><table class="table"><thead><tr><th>Unternehmens-ID</th><th>Name</th><th>Bereich</th><th>Inhaber</th><th>Status</th></tr></thead><tbody id="company-rows"></tbody></table></div></div></section>
-    <section id="bank" class="view"><div class="grid"><div class="card"><div class="eyebrow">Nexora Banking</div><h2>Konto eröffnen</h2><form id="account-form"><div class="field"><label for="account-holder">Kontoinhaber Bürger- oder Firmen-ID</label><input id="account-holder" name="holder_id" list="company-options" placeholder="CIT-XXXX oder Firmen-ID" required><datalist id="company-options"></datalist><small>Für Firmenkonten stehen aktive Unternehmen als Auswahl bereit.</small></div><div class="field"><label>Kontotyp</label><select name="type"><option value="privat">Privat</option><option value="unternehmen">Unternehmen</option></select></div><button class="btn">Konto beantragen</button></form><p id="account-msg" class="msg"></p></div><div class="card"><h2>Rechnung stellen</h2><form id="invoice-form"><div class="formgrid"><div class="field"><label>Von Konto-ID</label><input name="from_account_id" required></div><div class="field"><label>An Konto-ID</label><input name="to_account_id" required></div><div class="field"><label>Betrag</label><input name="amount" type="number" min="0.01" step="0.01" required></div><div class="field"><label>Grund</label><input name="reason" maxlength="160"></div></div><button class="btn">Rechnung erstellen</button></form><p id="invoice-msg" class="msg"></p></div></div><div class="card"><h2>Rechnungen</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Von</th><th>An</th><th>Betrag</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="invoice-rows"></tbody></table></div></div></section>
-    <section id="vehicles" class="view"><div class="card"><div class="eyebrow">Fahrzeughändler</div><h2>Fahrzeug erfassen</h2><form id="vehicle-form"><div class="formgrid"><div class="field"><label>Name</label><input name="name" required></div><div class="field"><label>Fahrzeugklasse</label><input name="vehicle_class" required></div><div class="field"><label>Preis</label><input name="price" type="number" min="0" step="0.01" required></div><div class="field"><label>Verfügbarkeit</label><select name="availability"><option value="verkauf">Verkauf</option><option value="miete">Miete</option></select></div></div><button class="btn">Fahrzeug einstellen</button></form><p id="vehicle-msg" class="msg"></p></div><div class="card"><h2>Fahrzeugbestand</h2><div class="tablewrap"><table class="table"><thead><tr><th>Fahrzeug-ID</th><th>Name</th><th>Klasse</th><th>Preis</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="vehicle-rows"></tbody></table></div></div></section>
-    <section id="logistics" class="view"><div class="card"><div class="eyebrow">Logistik Center</div><h2>Wareneingang und -ausgang</h2><form id="logistics-form"><div class="formgrid"><div class="field"><label>Artikel</label><input name="item_name" required></div><div class="field"><label>Menge</label><input name="quantity" type="number" min="1" required></div><div class="field"><label>Einzelpreis</label><input name="unit_price" type="number" min="0" step="0.01" required></div><div class="field"><label>Richtung</label><select name="direction"><option value="eingang">Eingang</option><option value="ausgang">Ausgang</option></select></div></div><button class="btn">Logistik buchen</button></form><p id="logistics-msg" class="msg"></p></div><div class="card"><h2>Preisaktion</h2><form id="discount-form"><div class="formgrid"><div class="field"><label>Artikelname</label><input name="item_name" required></div><div class="field"><label>Rabatt in Prozent</label><input name="percent" type="number" min="0" max="100" value="30" required></div></div><button class="btn alt">Preis reduzieren</button></form></div></section>
-    <section id="catalog" class="view"><div class="card"><div style="display:flex;justify-content:space-between;gap:12px;align-items:center"><h2>Katalog</h2><input id="catalog-search" placeholder="Produkt suchen ..." style="max-width:280px;padding:10px;border:1px solid #cbd7ce;border-radius:6px"></div><div id="products" class="grid" style="margin-top:18px"></div></div><div class="card"><h2>Warenkorb</h2><ul id="cart" class="list"></ul><p><strong>Gesamt: <span id="cart-total">0.00</span> €</strong></p><button class="btn" id="checkout">Jetzt bezahlen</button><p id="cart-msg" class="msg"></p></div></section>
-    <section id="admin" class="view"><div class="hero" style="padding:25px"><div class="eyebrow">Entwicklungsmodus</div><h2>Admin Panel</h2><p>Verwalte Bürger und Unternehmen zentral. Änderungen werden direkt in Supabase gespeichert.</p></div><div class="grid"><div class="card"><h2>Unternehmensanträge</h2><div id="admin-companies"></div></div><div class="card"><h2>Kontoeröffnungen</h2><div id="admin-accounts"></div></div></div><div class="card"><h2>Bürger verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>Bürger-ID</th><th>Name</th><th>Geburtsdatum</th><th>Aktionen</th></tr></thead><tbody id="admin-citizens"></tbody></table></div></div><div class="card"><h2>Alle Unternehmen verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>Unternehmens-ID</th><th>Name</th><th>Bereich</th><th>Inhaber</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="admin-company-list"></tbody></table></div></div></section>
+    <section id="home" class="view active">
+      <div class="hero">
+        <div class="eyebrow">Willkommen in Gnadental</div>
+        <h1>Dein Hof. Deine Stadt. Deine Geschichte.</h1>
+        <p>Die zentrale Verwaltung für Bürger, Unternehmen, Fahrzeuge, Banking und Handel im Gnadental Roleplay.</p>
+        <button class="btn" data-go="citizens">Bürger registrieren</button>
+      </div>
+      <div class="grid">
+        <div class="card"><div class="eyebrow">Server</div><h2>Gnadental LS25</h2><p>Wirtschaftsstatus: <strong>Stabil</strong></p><p>Letzter Datenabgleich: <span id="last-sync">-</span></p></div>
+        <div class="card"><div class="eyebrow">Aktueller Bestand</div><div class="grid"><div><div class="metric" id="citizen-count">0</div><small>Bürger</small></div><div><div class="metric" id="vehicle-count">0</div><small>Fahrzeuge</small></div><div><div class="metric" id="order-count">-</div><small>Bestellungen</small></div></div></div>
+      </div>
+    </section>
+
+    <section id="citizens" class="view">
+      <div class="grid">
+        <div class="card">
+          <div class="eyebrow">Meldeamt</div>
+          <h2>Bürger registrieren</h2>
+          <form id="citizen-form">
+            <div class="formgrid">
+              <div class="field"><label for="first_name">Vorname</label><input id="first_name" name="first_name" required maxlength="60"></div>
+              <div class="field"><label for="last_name">Nachname</label><input id="last_name" name="last_name" required maxlength="60"></div>
+              <div class="field"><label for="birthdate">Geburtsdatum</label><input id="birthdate" name="birthdate" type="date" required></div>
+            </div>
+            <button class="btn">Bürger-ID erzeugen</button>
+          </form>
+          <p id="citizen-msg" class="msg" role="status"></p>
+        </div>
+        <div class="card detail"><h2>Bürgerakte</h2><div id="citizen-detail" class="empty">Wähle einen Bürger aus der Liste.</div></div>
+      </div>
+      <div class="card"><h2>Bürgerliste</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Name</th><th>Geburtsdatum</th><th>Aktion</th></tr></thead><tbody id="citizen-rows"></tbody></table></div></div>
+    </section>
+
+    <section id="companies" class="view">
+      <div class="grid">
+        <div class="card">
+          <div class="eyebrow">Gewerbeamt</div>
+          <h2>Unternehmen anmelden</h2>
+          <form id="company-form">
+            <div class="formgrid">
+              <div class="field"><label>Unternehmensname</label><input name="company_name" required maxlength="100"></div>
+              <div class="field"><label>Inhaber Bürger-ID</label><input name="owner_citizen_id" placeholder="CIT-XXXX"></div>
+              <div class="field"><label>Bereich</label><select name="sector"><option>Landwirtschaft</option><option>Transport</option><option>Logistik</option><option>Werkstatt</option><option>Handel</option><option>Polizei</option></select></div>
+              <div class="field"><label>Beschreibung</label><input name="description" maxlength="240"></div>
+            </div>
+            <button class="btn">Antrag einreichen</button>
+          </form>
+          <p id="company-msg" class="msg"></p>
+        </div>
+        <div class="card detail"><h2>Unternehmensakte</h2><div id="company-detail" class="empty">Wähle ein Unternehmen aus der Liste.</div></div>
+      </div>
+      <div class="card"><h2>Unternehmen</h2><div class="tablewrap"><table class="table"><thead><tr><th>Unternehmens-ID</th><th>Name</th><th>Bereich</th><th>Inhaber</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="company-rows"></tbody></table></div></div>
+    </section>
+
+    <section id="bank" class="view">
+      <div class="grid">
+        <div class="card">
+          <div class="eyebrow">Nexora Banking</div>
+          <h2>Konto eröffnen</h2>
+          <form id="account-form">
+            <div class="field">
+              <label for="account-holder">Kontoinhaber Bürger- oder Firmen-ID</label>
+              <input id="account-holder" name="holder_id" list="company-options" placeholder="CIT-XXXX oder Firmen-ID" required>
+              <datalist id="company-options"></datalist>
+              <small>Für Firmenkonten stehen aktive Unternehmen als Auswahl bereit.</small>
+            </div>
+            <div class="field"><label>Kontotyp</label><select name="type"><option value="privat">Privat</option><option value="unternehmen">Unternehmen</option></select></div>
+            <button class="btn">Konto beantragen</button>
+          </form>
+          <p id="account-msg" class="msg"></p>
+        </div>
+
+        <div class="card">
+          <h2>Rechnung stellen</h2>
+          <form id="invoice-form">
+            <div class="formgrid">
+              <div class="field"><label>Absender Typ</label><select name="sender_type" id="invoice-sender-type"><option value="citizen">Bürger</option><option value="company">Unternehmen</option></select></div>
+              <div class="field"><label>Absender</label><select name="sender_id" id="invoice-sender-id" required></select></div>
+              <div class="field"><label>Empfänger Typ</label><select name="receiver_type" id="invoice-receiver-type"><option value="citizen">Bürger</option><option value="company">Unternehmen</option></select></div>
+              <div class="field"><label>Empfänger</label><select name="receiver_id" id="invoice-receiver-id" required></select></div>
+              <div class="field"><label>Betrag</label><input name="amount" type="number" min="0.01" step="0.01" required></div>
+              <div class="field"><label>Grund</label><input name="reason" maxlength="160" placeholder="z.B. Auftrag / Dienstleistung"></div>
+            </div>
+            <button class="btn">Rechnung erstellen</button>
+          </form>
+          <p id="invoice-msg" class="msg"></p>
+        </div>
+      </div>
+
+      <div class="card"><h2>Rechnungen</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Von</th><th>An</th><th>Betrag</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="invoice-rows"></tbody></table></div></div>
+    </section>
+
+    <section id="vehicles" class="view">
+      <div class="card">
+        <div class="eyebrow">Fahrzeughändler</div>
+        <h2>Fahrzeug erfassen</h2>
+        <form id="vehicle-form">
+          <div class="formgrid">
+            <div class="field"><label>Name</label><input name="name" required></div>
+            <div class="field"><label>Fahrzeugklasse</label><input name="vehicle_class" required></div>
+            <div class="field"><label>Preis</label><input name="price" type="number" min="0" step="0.01" required></div>
+            <div class="field"><label>Verfügbarkeit</label><select name="availability"><option value="verkauf">Verkauf</option><option value="miete">Miete</option></select></div>
+          </div>
+          <button class="btn">Fahrzeug einstellen</button>
+        </form>
+        <p id="vehicle-msg" class="msg"></p>
+      </div>
+      <div class="card"><h2>Fahrzeugbestand</h2><div class="tablewrap"><table class="table"><thead><tr><th>Fahrzeug-ID</th><th>Name</th><th>Klasse</th><th>Preis</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="vehicle-rows"></tbody></table></div></div>
+    </section>
+
+    <section id="logistics" class="view">
+      <div class="card">
+        <div class="eyebrow">Logistik Center</div>
+        <h2>Wareneingang und -ausgang</h2>
+        <form id="logistics-form">
+          <div class="formgrid">
+            <div class="field"><label>Artikel</label><input name="item_name" required></div>
+            <div class="field"><label>Menge</label><input name="quantity" type="number" min="1" required></div>
+            <div class="field"><label>Einzelpreis</label><input name="unit_price" type="number" min="0" step="0.01" required></div>
+            <div class="field"><label>Richtung</label><select name="direction"><option value="eingang">Eingang</option><option value="ausgang">Ausgang</option></select></div>
+          </div>
+          <button class="btn">Logistik buchen</button>
+        </form>
+        <p id="logistics-msg" class="msg"></p>
+      </div>
+      <div class="card">
+        <h2>Preisaktion</h2>
+        <form id="discount-form">
+          <div class="formgrid">
+            <div class="field"><label>Artikelname</label><input name="item_name" required></div>
+            <div class="field"><label>Rabatt in Prozent</label><input name="percent" type="number" min="0" max="100" value="30" required></div>
+          </div>
+          <button class="btn alt">Preis reduzieren</button>
+        </form>
+      </div>
+    </section>
+
+    <section id="catalog" class="view">
+      <div class="card">
+        <div style="display:flex;justify-content:space-between;gap:12px;align-items:center">
+          <h2>Katalog</h2>
+          <input id="catalog-search" placeholder="Produkt suchen ..." style="max-width:280px;padding:10px;border:1px solid #cbd7ce;border-radius:6px">
+        </div>
+        <div id="products" class="grid" style="margin-top:18px"></div>
+      </div>
+      <div class="card">
+        <h2>Warenkorb</h2>
+        <ul id="cart" class="list"></ul>
+        <p><strong>Gesamt: <span id="cart-total">0.00</span> €</strong></p>
+        <button class="btn" id="checkout">Jetzt bezahlen</button>
+        <p id="cart-msg" class="msg"></p>
+      </div>
+    </section>
+
+    <section id="admin" class="view">
+      <div class="hero" style="padding:25px"><div class="eyebrow">Entwicklungsmodus</div><h2>Admin Panel</h2><p>Verwalte Bürger und Unternehmen zentral. Änderungen werden direkt in Supabase gespeichert.</p></div>
+      <div class="grid"><div class="card"><h2>Unternehmensanträge</h2><div id="admin-companies"></div></div><div class="card"><h2>Kontoeröffnungen</h2><div id="admin-accounts"></div></div></div>
+      <div class="card"><h2>Bürger verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>Bürger-ID</th><th>Name</th><th>Geburtsdatum</th><th>Aktionen</th></tr></thead><tbody id="admin-citizens"></tbody></table></div></div>
+      <div class="card"><h2>Alle Unternehmen verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>Unternehmens-ID</th><th>Name</th><th>Bereich</th><th>Inhaber</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="admin-company-list"></tbody></table></div></div>
+    </section>
   </main>
+
   <script>
-    const supabaseUrl="https://mrehtxzzsjvbdggwxgzl.supabase.co"
-    const supabaseAnonKey="sb_publishable_bURYODu8FAJ32VSSCWIX5g_FBordMjD";
-    const db=window.supabase.createClient(supabaseUrl,supabaseAnonKey,{realtime:{params:{eventsPerSecond:10}}});
-    const $=selector=>document.querySelector(selector), $$=selector=>document.querySelectorAll(selector);
-    const state={citizens:[],companies:[],accounts:[],invoices:[],vehicles:[],products:[],cart:[],selected:null};
-    const esc=value=>String(value??"").replace(/[&<>'"]/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[char]));
-    const money=value=>Number(value||0).toFixed(2)+" €";
-    function message(id,text,ok=false){const el=$(id);el.textContent=text;el.className=ok?'msg ok':'msg'}
-    function navigate(view){$$('.view').forEach(el=>el.classList.toggle('active',el.id===view));$$('[data-view]').forEach(el=>el.classList.toggle('active',el.dataset.view===view));scrollTo({top:0,behavior:'smooth'})}
-    $$('[data-view]').forEach(button=>button.addEventListener('click',()=>navigate(button.dataset.view)));$$('[data-go]').forEach(button=>button.addEventListener('click',()=>navigate(button.dataset.go)));
-    function id(prefix){return prefix+"-"+String(Math.floor(Math.random()*10000)).padStart(4,'0')}
-    async function read(table,order='created_at'){const result=await db.from(table).select('*').order(order,{ascending:false});if(result.error)throw result.error;return result.data||[]}
-    async function loadAll(){try{[state.citizens,state.companies,state.accounts,state.invoices,state.vehicles,state.products]=await Promise.all([read('citizens','citizen_id'),read('companies'),read('accounts'),read('invoices'),read('vehicles'),read('logistics_items')]);renderAll();$('#last-sync').textContent=new Date().toLocaleTimeString('de-DE')}catch(error){setConnection('Supabase-Fehler: '+error.message,true)}}
-    function setConnection(text,bad=false){const el=$('#connection');el.textContent=text;el.className='status '+(bad?'bad':'ok')}
-    function renderAll(){renderCitizens();renderCompanies();renderInvoices();renderVehicles();renderProducts();renderAdmin();$('#citizen-count').textContent=state.citizens.length;$('#vehicle-count').textContent=state.vehicles.length}
-    function renderCitizens(){$('#citizen-rows').innerHTML=state.citizens.length?state.citizens.map(c=>`<tr><td><strong>${esc(c.citizen_id)}</strong></td><td>${esc(c.first_name)} ${esc(c.last_name)}</td><td>${esc(c.birthdate)}</td><td><button class="btn alt" data-citizen="${esc(c.citizen_id)}">Akte öffnen</button></td></tr>`).join(''):'<tr><td colspan="4" class="empty">Noch keine Bürger registriert.</td></tr>';$$('[data-citizen]').forEach(b=>b.addEventListener('click',()=>openCitizen(b.dataset.citizen)))}
-    async function openCitizen(citizenId){state.selected=state.citizens.find(c=>c.citizen_id===citizenId);if(!state.selected)return;const [licenses,vehicles,accounts]=await Promise.all([db.from('licenses').select('*').eq('citizen_id',citizenId),db.from('vehicles').select('*').eq('owner_citizen_id',citizenId),db.from('accounts').select('*').eq('citizen_id',citizenId)]);$('#citizen-detail').innerHTML=`<h3>${esc(state.selected.first_name)} ${esc(state.selected.last_name)}</h3><p><strong>Bürger-ID:</strong> ${esc(citizenId)}</p><p><strong>Konten:</strong> ${accounts.data?.map(a=>`${esc(a.type)} ${money(a.balance)}`).join(' · ')||'Keine'}</p><h3>Führerscheine</h3><form id="license-form" class="actions"><input name="license_class" placeholder="Klasse, z.B. T" required style="padding:9px;border:1px solid #cbd7ce;border-radius:6px"><button class="btn">Hinzufügen</button></form><ul class="list">${licenses.data?.map(l=>`<li>${esc(l.license_class)}</li>`).join('')||'<li>Keine Führerscheine</li>'}</ul><h3>Fahrzeuge</h3><ul class="list">${vehicles.data?.map(v=>`<li>${esc(v.vehicle_id)} - ${esc(v.name)} <button class="btn alt" data-unregister="${esc(v.vehicle_id)}">Abmelden</button></li>`).join('')||'<li>Keine Fahrzeuge</li>'}</ul>`;$('#license-form').addEventListener('submit',async e=>{e.preventDefault();const value=new FormData(e.target).get('license_class');const result=await db.from('licenses').insert({citizen_id:citizenId,license_class:value});if(result.error)alert(result.error.message);else openCitizen(citizenId)});$$('[data-unregister]').forEach(b=>b.addEventListener('click',()=>unregisterVehicle(b.dataset.unregister)));navigate('citizens')}
-    function renderCompanies(){$('#company-rows').innerHTML=state.companies.length?state.companies.map(c=>`<tr><td><strong>${esc(c.id)}</strong></td><td>${esc(c.company_name)}</td><td>${esc(c.sector)}</td><td>${esc(c.owner_citizen_id||'-')}</td><td><span class="tag ${esc(c.status)}">${esc(c.status)}</span></td></tr>`).join(''):'<tr><td colspan="5" class="empty">Noch keine Unternehmen.</td></tr>';$('#company-options').innerHTML=state.companies.filter(c=>c.status==='active').map(c=>`<option value="${esc(c.id)}">${esc(c.company_name)} (${esc(c.id)})</option>`).join('')}
-    function renderInvoices(){$('#invoice-rows').innerHTML=state.invoices.length?state.invoices.map(i=>`<tr><td>${esc(i.id)}</td><td>${esc(i.from_account_id)}</td><td>${esc(i.to_account_id)}</td><td class="money">${money(i.amount)}</td><td><span class="tag ${esc(i.status)}">${esc(i.status)}</span></td><td>${i.status==='open'?`<button class="btn" data-pay="${esc(i.id)}">Bezahlen</button>`:'-'}</td></tr>`).join(''):'<tr><td colspan="6" class="empty">Keine Rechnungen.</td></tr>';$$('[data-pay]').forEach(b=>b.addEventListener('click',()=>payInvoice(b.dataset.pay)))}
-    function renderVehicles(){$('#vehicle-rows').innerHTML=state.vehicles.length?state.vehicles.map(v=>`<tr><td>${esc(v.vehicle_id)}</td><td>${esc(v.name)}</td><td>${esc(v.vehicle_class)}</td><td class="money">${money(v.price)}</td><td><span class="tag ${esc(v.status)}">${esc(v.status)}</span></td><td><div class="actions"><button class="btn alt" data-assign="${esc(v.vehicle_id)}">Zuweisen</button><button class="btn warn" data-unregister="${esc(v.vehicle_id)}">Abmelden</button></div></td></tr>`).join(''):'<tr><td colspan="6" class="empty">Keine Fahrzeuge.</td></tr>';$$('[data-assign]').forEach(b=>b.addEventListener('click',()=>assignVehicle(b.dataset.assign)));$$('[data-unregister]').forEach(b=>b.addEventListener('click',()=>unregisterVehicle(b.dataset.unregister)))}
-    function renderProducts(){const term=($('#catalog-search').value||'').toLowerCase();const products=state.products.filter(p=>String(p.item_name).toLowerCase().includes(term));$('#products').innerHTML=products.map(p=>`<div class="product"><div><strong>${esc(p.item_name)}</strong><small>Aus Gnadental Logistik</small></div><div><span class="money">${money(p.unit_price)}</span><button class="btn alt" data-add="${esc(p.id)}">In den Warenkorb</button></div></div>`).join('')||'<p class="empty">Keine Produkte gefunden.</p>';$$('[data-add]').forEach(b=>b.addEventListener('click',()=>{const item=state.products.find(p=>String(p.id)===b.dataset.add);if(item)state.cart.push(item);renderCart()}))}
-    function renderCart(){$('#cart').innerHTML=state.cart.map((p,i)=>`<li>${esc(p.item_name)} - ${money(p.unit_price)} <button class="btn alt" data-remove="${i}">Entfernen</button></li>`).join('')||'<li>Der Warenkorb ist leer.</li>';$('#cart-total').textContent=state.cart.reduce((sum,p)=>sum+Number(p.unit_price),0).toFixed(2);$$('[data-remove]').forEach(b=>b.addEventListener('click',()=>{state.cart.splice(Number(b.dataset.remove),1);renderCart()}))}
-    function renderAdmin(){$('#admin-companies').innerHTML=state.companies.filter(c=>c.status==='pending').map(c=>`<p><strong>${esc(c.id)}</strong> · ${esc(c.company_name)} <button class="btn" data-approve-company="${esc(c.id)}">Bestätigen</button></p>`).join('')||'<p class="empty">Keine offenen Anträge.</p>';$('#admin-accounts').innerHTML=state.accounts.filter(a=>a.status==='pending').map(a=>`<p>Konto ${esc(a.id)} (${esc(a.type)}) <input data-capital="${esc(a.id)}" type="number" value="0" step="0.01" style="width:100px;padding:7px"><button class="btn" data-approve-account="${esc(a.id)}">Aktivieren</button></p>`).join('')||'<p class="empty">Keine offenen Kontoanträge.</p>';$('#admin-citizens').innerHTML=state.citizens.map(c=>`<tr><td>${esc(c.citizen_id)}</td><td>${esc(c.first_name)} ${esc(c.last_name)}</td><td>${esc(c.birthdate)}</td><td><div class="actions"><button class="btn alt" data-edit-citizen="${esc(c.citizen_id)}">Bearbeiten</button><button class="btn warn" data-delete-citizen="${esc(c.citizen_id)}">Löschen</button></div></td></tr>`).join('')||'<tr><td colspan="4" class="empty">Keine Bürger vorhanden.</td></tr>';$('#admin-company-list').innerHTML=state.companies.map(c=>`<tr><td><strong>${esc(c.id)}</strong></td><td>${esc(c.company_name)}</td><td>${esc(c.sector)}</td><td>${esc(c.owner_citizen_id||'-')}</td><td><span class="tag ${esc(c.status)}">${esc(c.status)}</span></td><td><div class="actions"><button class="btn alt" data-edit-company="${esc(c.id)}">Bearbeiten</button><button class="btn warn" data-delete-company="${esc(c.id)}">Löschen</button></div></td></tr>`).join('')||'<tr><td colspan="6" class="empty">Keine Unternehmen vorhanden.</td></tr>';$$('[data-approve-company]').forEach(b=>b.addEventListener('click',()=>approveCompany(b.dataset.approveCompany)));$$('[data-approve-account]').forEach(b=>b.addEventListener('click',()=>approveAccount(b.dataset.approveAccount)));$$('[data-edit-citizen]').forEach(b=>b.addEventListener('click',()=>editCitizen(b.dataset.editCitizen)));$$('[data-delete-citizen]').forEach(b=>b.addEventListener('click',()=>deleteRecord('citizens','citizen_id',b.dataset.deleteCitizen,'Bürger')));$$('[data-edit-company]').forEach(b=>b.addEventListener('click',()=>editCompany(b.dataset.editCompany)));$$('[data-delete-company]').forEach(b=>b.addEventListener('click',()=>deleteRecord('companies','id',b.dataset.deleteCompany,'Unternehmen')))}
-    async function insert(table,payload,msg){const result=await db.from(table).insert(payload);if(result.error)throw result.error;if(msg)message(msg,'Gespeichert.',true);await loadAll()}
-    $('#citizen-form').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target);try{await insert('citizens',{citizen_id:id('CIT'),first_name:f.get('first_name'),last_name:f.get('last_name'),birthdate:f.get('birthdate')},'#citizen-msg');e.target.reset()}catch(err){message('#citizen-msg',err.message)}});
-    $('#company-form').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target);try{await insert('companies',{company_name:f.get('company_name'),owner_citizen_id:f.get('owner_citizen_id')||null,sector:f.get('sector'),description:f.get('description'),status:'pending'},'#company-msg');e.target.reset()}catch(err){message('#company-msg',err.message)}});
-    $('#account-form').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target),holder=f.get('holder_id');const payload={type:f.get('type'),balance:0,status:'pending',...(f.get('type')==='unternehmen'?{company_id:holder}:{citizen_id:holder})};try{await insert('accounts',payload,'#account-msg');e.target.reset()}catch(err){message('#account-msg',err.message)}});
-    $('#invoice-form').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target);try{await insert('invoices',{from_account_id:f.get('from_account_id'),to_account_id:f.get('to_account_id'),amount:Number(f.get('amount')),reason:f.get('reason'),status:'open'},'#invoice-msg');e.target.reset()}catch(err){message('#invoice-msg',err.message)}});
-    $('#vehicle-form').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target);try{await insert('vehicles',{vehicle_id:id('VEH'),name:f.get('name'),vehicle_class:f.get('vehicle_class'),price:Number(f.get('price')),availability:f.get('availability'),status:'neu',owner_citizen_id:null},'#vehicle-msg');e.target.reset()}catch(err){message('#vehicle-msg',err.message)}});
-    $('#logistics-form').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target);try{await insert('logistics',{item_name:f.get('item_name'),quantity:Number(f.get('quantity')),unit_price:Number(f.get('unit_price')),direction:f.get('direction')},'#logistics-msg');const existing=state.products.find(p=>p.item_name===f.get('item_name'));if(!existing)await insert('logistics_items',{item_name:f.get('item_name'),unit_price:Number(f.get('unit_price'))});e.target.reset()}catch(err){message('#logistics-msg',err.message)}});
-    $('#discount-form').addEventListener('submit',async e=>{e.preventDefault();const f=new FormData(e.target),item=state.products.find(p=>p.item_name===f.get('item_name'));if(!item)return message('#logistics-msg','Artikel im Katalog nicht gefunden.');const result=await db.from('logistics_items').update({unit_price:Number(item.unit_price)*(1-Number(f.get('percent'))/100)}).eq('id',item.id);if(result.error)message('#logistics-msg',result.error.message);else{message('#logistics-msg','Preis aktualisiert.',true);loadAll()}});
-    $('#catalog-search').addEventListener('input',renderProducts);
-    async function rpc(name,args,msg){const result=await db.rpc(name,args);if(result.error)throw result.error;if(msg)message(msg,'Vorgang erfolgreich.',true);await loadAll()}
-    async function payInvoice(invoiceId){try{await rpc('pay_invoice',{invoice_id:invoiceId},'#invoice-msg')}catch(err){message('#invoice-msg','Zahlung fehlgeschlagen: '+err.message)}}
-    async function assignVehicle(vehicleId){const citizenId=prompt('Bürger-ID eingeben:');if(!citizenId)return;try{await rpc('register_vehicle_to_citizen',{vehicle_id:vehicleId,citizen_id:citizenId},'#vehicle-msg')}catch(err){message('#vehicle-msg',err.message)}}
-    async function unregisterVehicle(vehicleId){if(!confirm('Fahrzeug wirklich abmelden?'))return;try{await rpc('unregister_vehicle',{vehicle_id:vehicleId},'#vehicle-msg')}catch(err){message('#vehicle-msg',err.message)}}
-    async function editCitizen(citizenId){const citizen=state.citizens.find(item=>item.citizen_id===citizenId);if(!citizen)return;const firstName=prompt('Vorname:',citizen.first_name);if(firstName===null)return;const lastName=prompt('Nachname:',citizen.last_name);if(lastName===null)return;const birthdate=prompt('Geburtsdatum (YYYY-MM-DD):',citizen.birthdate||'');if(birthdate===null)return;if(!firstName.trim()||!lastName.trim()||!/^\d{4}-\d{2}-\d{2}$/.test(birthdate))return alert('Bitte gültige Bürgerdaten eingeben.');const result=await db.from('citizens').update({first_name:firstName.trim(),last_name:lastName.trim(),birthdate}).eq('citizen_id',citizenId);if(result.error)alert('Bürger konnte nicht geändert werden: '+result.error.message);else loadAll()}
-    async function editCompany(companyId){const company=state.companies.find(item=>String(item.id)===String(companyId));if(!company)return;const name=prompt('Unternehmensname:',company.company_name);if(name===null)return;const sector=prompt('Bereich:',company.sector||'');if(sector===null)return;const description=prompt('Beschreibung:',company.description||'');if(description===null)return;if(!name.trim()||!sector.trim())return alert('Name und Bereich dürfen nicht leer sein.');const result=await db.from('companies').update({company_name:name.trim(),sector:sector.trim(),description:description.trim()}).eq('id',companyId);if(result.error)alert('Unternehmen konnte nicht geändert werden: '+result.error.message);else loadAll()}
-    async function deleteRecord(table,field,value,label){if(!confirm(`${label} wirklich endgültig löschen?`))return;const result=await db.from(table).delete().eq(field,value);if(result.error){alert(`${label} konnte nicht gelöscht werden: ${result.error.message}`);return}if(state.selected?.citizen_id===value){state.selected=null;$('#citizen-detail').textContent='Wähle einen Bürger aus der Liste.';$('#citizen-detail').className='empty'}loadAll()}
-    async function approveCompany(id){try{await db.from('companies').update({status:'active'}).eq('id',id);loadAll()}catch(err){alert(err.message)}}
-    async function approveAccount(id){const capital=Number($(`[data-capital="${id}"]`).value||0);try{await db.from('accounts').update({status:'active',balance:capital}).eq('id',id);loadAll()}catch(err){alert(err.message)}}
-    $('#checkout').addEventListener('click',async()=>{if(!state.cart.length)return message('#cart-msg','Der Warenkorb ist leer.');const holder=prompt('Bürger-ID oder Unternehmens-ID für die Zahlung:');if(!holder)return;const account=state.accounts.find(a=>(a.citizen_id===holder||a.company_id===holder)&&a.status==='active');if(!account)return message('#cart-msg','Kein aktives Konto gefunden.');try{await rpc('create_order',{account_id:account.id,items_json:JSON.stringify(state.cart),total_amount:state.cart.reduce((s,p)=>s+Number(p.unit_price),0)},'#cart-msg');state.cart=[];renderCart()}catch(err){message('#cart-msg','Bestellung fehlgeschlagen: '+err.message)}});
-    const tables=['citizens','companies','accounts','invoices','vehicles','licenses','logistics_items','orders'];tables.forEach(table=>db.channel('gnadental-'+table).on('postgres_changes',{event:'*',schema:'public',table},()=>loadAll()).subscribe(status=>{if(status==='SUBSCRIBED')setConnection('Supabase verbunden · Realtime aktiv')}));
-    async function start(){setConnection('Supabase wird verbunden ...');const result=await db.from('citizens').select('citizen_id').limit(1);if(result.error)setConnection('Supabase-Fehler: '+result.error.message,true);else{setConnection('Supabase verbunden · Realtime startet');await loadAll()}}start();
+    const supabaseUrl = 'https://mrehtxzzsjvbdggwxgzl.supabase.co';
+    const supabaseAnonKey = 'sb_publishable_bURYODu8FAJ32VSSCWIX5g_FBordMjD';
+    const db = window.supabase.createClient(supabaseUrl, supabaseAnonKey, { realtime: { params: { eventsPerSecond: 10 } } });
+    const $ = selector => document.querySelector(selector);
+    const $$ = selector => document.querySelectorAll(selector);
+
+    const storage = {
+      get(key, fallback) {
+        try { return JSON.parse(localStorage.getItem(key)) ?? fallback; } catch { return fallback; }
+      },
+      set(key, value) {
+        localStorage.setItem(key, JSON.stringify(value));
+      }
+    };
+
+    const state = {
+      citizens: [],
+      companies: [],
+      accounts: [],
+      invoices: [],
+      vehicles: [],
+      products: [],
+      cart: [],
+      selected: null,
+      companyWarehouse: storage.get('gnadental_company_warehouse', {}),
+      accountMovements: storage.get('gnadental_account_movements', [])
+    };
+
+    const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+    const money = value => Number(value || 0).toFixed(2) + ' €';
+    const formatDate = value => value ? new Date(value).toLocaleDateString('de-DE') : '-';
+
+    function message(id, text, ok = false) {
+      const el = $(id);
+      if (!el) return;
+      el.textContent = text;
+      el.className = ok ? 'msg ok' : 'msg';
+    }
+
+    function navigate(view) {
+      $$('.view').forEach(el => el.classList.toggle('active', el.id === view));
+      $$('[data-view]').forEach(el => el.classList.toggle('active', el.dataset.view === view));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    $$('[data-view]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.view)));
+    $$('[data-go]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.go)));
+
+    function id(prefix) { return prefix + '-' + String(Math.floor(Math.random() * 10000)).padStart(4, '0'); }
+
+    function getCompanyWarehouse(companyId) { return state.companyWarehouse[String(companyId)] || []; }
+    function setCompanyWarehouse(companyId, items) {
+      state.companyWarehouse[String(companyId)] = items;
+      storage.set('gnadental_company_warehouse', state.companyWarehouse);
+    }
+
+    function saveAccountMovement(entry) {
+      const list = state.accountMovements || [];
+      list.unshift(entry);
+      state.accountMovements = list.slice(0, 100);
+      storage.set('gnadental_account_movements', state.accountMovements);
+    }
+
+    function getEntityList(type) {
+      if (type === 'company') {
+        return state.companies.filter(c => c.status === 'active').map(c => ({ id: String(c.id), label: `${c.company_name} (${c.id})`, type: 'company' }));
+      }
+      return state.citizens.map(c => ({ id: String(c.citizen_id), label: `${c.first_name} ${c.last_name} (${c.citizen_id})`, type: 'citizen' }));
+    }
+
+    function updateEntityDropdowns() {
+      const senderType = $('#invoice-sender-type') ? $('#invoice-sender-type').value : 'citizen';
+      const receiverType = $('#invoice-receiver-type') ? $('#invoice-receiver-type').value : 'citizen';
+
+      const buildOptions = (list) => list.length ? list.map(item => `<option value="${esc(item.id)}">${esc(item.label)}</option>`).join('') : '<option value="">Keine Einträge</option>';
+
+      if ($('#invoice-sender-id')) $('#invoice-sender-id').innerHTML = buildOptions(getEntityList(senderType));
+      if ($('#invoice-receiver-id')) $('#invoice-receiver-id').innerHTML = buildOptions(getEntityList(receiverType));
+    }
+
+    function getAccountForEntity(type, id) {
+      return state.accounts.find(a => {
+        const targetType = a.type === 'unternehmen' ? 'company' : 'citizen';
+        const targetId = targetType === 'company' ? a.company_id : a.citizen_id;
+        return targetType === type && String(targetId) === String(id) && a.status === 'active';
+      }) || null;
+    }
+
+    function getCompanyCatalog() {
+      const catalog = [];
+      (state.products || []).forEach(item => {
+        catalog.push({ id: item.id, item_name: item.item_name, company_name: 'Gnadental Logistik', unit_price: Number(item.unit_price || 0), quantity: Number(item.quantity || 0), source: 'logistics' });
+      });
+      Object.entries(state.companyWarehouse || {}).forEach(([companyId, items]) => {
+        const company = state.companies.find(c => String(c.id) === String(companyId));
+        (items || []).forEach(item => {
+          if (!item || !item.product_name) return;
+          catalog.push({
+            id: `company-${companyId}-${item.product_name}`,
+            item_name: item.product_name,
+            company_name: company ? company.company_name : 'Unternehmen',
+            unit_price: Number(item.unit_price || 0),
+            quantity: Number(item.amount || item.quantity || 0),
+            company_id: companyId,
+            source: 'company'
+          });
+        });
+      });
+      return catalog;
+    }
+
+    async function read(table, order = 'created_at') {
+      const result = await db.from(table).select('*').order(order, { ascending: false });
+      if (result.error) throw result.error;
+      return result.data || [];
+    }
+
+    async function loadAll() {
+      try {
+        [state.citizens, state.companies, state.accounts, state.invoices, state.vehicles, state.products] = await Promise.all([
+          read('citizens', 'citizen_id'),
+          read('companies'),
+          read('accounts'),
+          read('invoices'),
+          read('vehicles'),
+          read('logistics_items')
+        ]);
+        state.companyWarehouse = storage.get('gnadental_company_warehouse', {});
+        renderAll();
+        updateEntityDropdowns();
+        $('#last-sync').textContent = new Date().toLocaleTimeString('de-DE');
+      } catch (error) {
+        setConnection('Supabase-Fehler: ' + error.message, true);
+        renderAll();
+        updateEntityDropdowns();
+      }
+    }
+
+    function setConnection(text, bad = false) {
+      const el = $('#connection');
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'status ' + (bad ? 'bad' : 'ok');
+    }
+
+    function renderAll() {
+      renderCitizens();
+      renderCompanies();
+      renderInvoices();
+      renderVehicles();
+      renderProducts();
+      renderAdmin();
+      $('#citizen-count').textContent = state.citizens.length;
+      $('#vehicle-count').textContent = state.vehicles.length;
+    }
+
+    function renderCitizens() {
+      $('#citizen-rows').innerHTML = state.citizens.length
+        ? state.citizens.map(c => `<tr><td><strong>${esc(c.citizen_id)}</strong></td><td>${esc(c.first_name)} ${esc(c.last_name)}</td><td>${esc(c.birthdate)}</td><td><button class="btn alt" data-citizen="${esc(c.citizen_id)}">Akte öffnen</button></td></tr>`).join('')
+        : '<tr><td colspan="4" class="empty">Noch keine Bürger registriert.</td></tr>';
+      $$('[data-citizen]').forEach(button => button.addEventListener('click', () => openCitizen(button.dataset.citizen)));
+    }
+
+    async function openCitizen(citizenId) {
+      state.selected = state.citizens.find(c => c.citizen_id === citizenId);
+      if (!state.selected) return;
+
+      const [licenses, vehicles, accounts] = await Promise.all([
+        db.from('licenses').select('*').eq('citizen_id', citizenId),
+        db.from('vehicles').select('*').eq('owner_citizen_id', citizenId),
+        db.from('accounts').select('*').eq('citizen_id', citizenId)
+      ]);
+
+      $('#citizen-detail').innerHTML = `
+        <h3>${esc(state.selected.first_name)} ${esc(state.selected.last_name)}</h3>
+        <p><strong>Bürger-ID:</strong> ${esc(citizenId)}</p>
+        <p><strong>Konten:</strong> ${accounts.data?.map(a => `${esc(a.type)} ${money(a.balance)}`).join(' · ') || 'Keine'}</p>
+        <h3>Führerscheine</h3>
+        <form id="license-form" class="actions">
+          <input name="license_class" placeholder="Klasse, z.B. T" required style="padding:9px;border:1px solid #cbd7ce;border-radius:6px">
+          <button class="btn">Hinzufügen</button>
+        </form>
+        <ul class="list">${licenses.data?.map(l => `<li>${esc(l.license_class)}</li>`).join('') || '<li>Keine Führerscheine</li>'}</ul>
+        <h3>Fahrzeuge</h3>
+        <ul class="list">${vehicles.data?.map(v => `<li>${esc(v.vehicle_id)} - ${esc(v.name)} <button class="btn alt" data-unregister="${esc(v.vehicle_id)}">Abmelden</button></li>`).join('') || '<li>Keine Fahrzeuge</li>'}</ul>
+      `;
+
+      $('#license-form').addEventListener('submit', async e => {
+        e.preventDefault();
+        const value = new FormData(e.target).get('license_class');
+        const result = await db.from('licenses').insert({ citizen_id: citizenId, license_class: value });
+        if (result.error) alert(result.error.message);
+        else openCitizen(citizenId);
+      });
+
+      $$('[data-unregister]').forEach(button => button.addEventListener('click', () => unregisterVehicle(button.dataset.unregister)));
+      navigate('citizens');
+    }
+
+    function renderCompanies() {
+      $('#company-rows').innerHTML = state.companies.length
+        ? state.companies.map(c => `<tr><td><strong>${esc(c.id)}</strong></td><td>${esc(c.company_name)}</td><td>${esc(c.sector)}</td><td>${esc(c.owner_citizen_id || '-')}</td><td><span class="tag ${esc(c.status)}">${esc(c.status)}</span></td><td><button class="btn alt" data-company="${esc(c.id)}">Akte öffnen</button></td></tr>`).join('')
+        : '<tr><td colspan="6" class="empty">Noch keine Unternehmen.</td></tr>';
+
+      $('#company-options').innerHTML = state.companies.filter(c => c.status === 'active').map(c => `<option value="${esc(c.id)}">${esc(c.company_name)} (${esc(c.id)})</option>`).join('');
+      $$('[data-company]').forEach(button => button.addEventListener('click', () => openCompany(button.dataset.company)));
+    }
+
+    function openCompany(companyId) {
+      state.selected = state.companies.find(c => String(c.id) === String(companyId));
+      if (!state.selected) return;
+
+      const account = state.accounts.find(a => String(a.company_id) === String(companyId) && a.status === 'active');
+      const warehouse = getCompanyWarehouse(companyId);
+      const fleet = state.vehicles.filter(v => String(v.company_id) === String(companyId));
+      const movements = state.accountMovements.filter(m => String(m.company_id) === String(companyId) || String(m.sender_company_id) === String(companyId) || String(m.receiver_company_id) === String(companyId));
+
+      $('#company-detail').innerHTML = `
+        <h3>${esc(state.selected.company_name)}</h3>
+        <p><strong>Unternehmens-ID:</strong> ${esc(companyId)}</p>
+        <p><strong>Inhaber:</strong> ${esc(state.selected.owner_citizen_id || '-')}</p>
+        <p><strong>Kontostand:</strong> ${money(account ? account.balance : 0)}</p>
+
+        <h3>Aktueller Lagerbestand</h3>
+        <div class="tablewrap"><table class="table"><thead><tr><th>Produkt</th><th>Menge</th><th>Preis</th><th>Aktualisiert</th></tr></thead><tbody>${warehouse.length ? warehouse.map(item => `<tr><td>${esc(item.product_name)}</td><td>${esc(item.amount || item.quantity || 0)}</td><td>${money(item.unit_price)}</td><td>${formatDate(item.updated_at)}</td></tr>`).join('') : '<tr><td colspan="4" class="empty">Noch keine Lagerdaten.</td></tr>'}</tbody></table></div>
+
+        <form id="company-stock-form" class="formgrid" style="margin-top:12px">
+          <div class="field"><label>Produkt</label><input name="product_name" required></div>
+          <div class="field"><label>Menge</label><input name="amount" type="number" min="0" step="1" required></div>
+          <div class="field"><label>Preis</label><input name="unit_price" type="number" min="0" step="0.01" required></div>
+        </form>
+        <div class="actions" style="margin-top:8px">
+          <button class="btn" id="company-stock-save">Bestand erfassen</button>
+          <button class="btn alt" id="company-stock-in">Wareneingang</button>
+          <button class="btn alt" id="company-stock-out">Warenausgang</button>
+        </div>
+
+        <h3>Fahrzeuge</h3>
+        <ul class="list">${fleet.length ? fleet.map(v => `<li>${esc(v.vehicle_id)} - ${esc(v.name)} (${esc(v.status)})</li>`).join('') : '<li>Keine Fahrzeugregistrierungen.</li>'}</ul>
+
+        <h3>Kontobewegungen</h3>
+        <ul class="list">${movements.length ? movements.slice(0, 6).map(m => `<li>${esc(m.note || 'Buchung')} · ${m.type === 'incoming' ? '+' : '-'}${money(m.amount)}</li>`).join('') : '<li>Keine Kontobewegungen.</li>'}</ul>
+      `;
+
+      $('#company-stock-save').addEventListener('click', () => saveCompanyStock(companyId, 'manual'));
+      $('#company-stock-in').addEventListener('click', () => saveCompanyStock(companyId, 'eingang'));
+      $('#company-stock-out').addEventListener('click', () => saveCompanyStock(companyId, 'ausgang'));
+      navigate('companies');
+    }
+
+    function saveCompanyStock(companyId, mode = 'manual') {
+      const form = document.getElementById('company-stock-form');
+      if (!form) return;
+
+      const f = new FormData(form);
+      const product_name = String(f.get('product_name') || '').trim();
+      const amount = Number(f.get('amount') || 0);
+      const unit_price = Number(f.get('unit_price') || 0);
+
+      if (!product_name || amount <= 0) {
+        message('#company-msg', 'Bitte Produkt, Menge und Preis eingeben.');
+        return;
+      }
+
+      const items = getCompanyWarehouse(companyId);
+      const existing = items.find(item => String(item.product_name).toLowerCase() === product_name.toLowerCase());
+      let newAmount = amount;
+
+      if (mode === 'eingang') {
+        newAmount = (Number(existing?.amount || existing?.quantity || 0) || 0) + amount;
+      } else if (mode === 'ausgang') {
+        newAmount = Math.max((Number(existing?.amount || existing?.quantity || 0) || 0) - amount, 0);
+      } else if (existing) {
+        newAmount = amount;
+      }
+
+      const nextItem = {
+        id: existing ? existing.id : `stock-${Date.now()}`,
+        product_name,
+        amount: newAmount,
+        unit_price,
+        updated_at: new Date().toISOString()
+      };
+
+      const updated = existing ? items.map(item => String(item.product_name).toLowerCase() === product_name.toLowerCase() ? nextItem : item) : [...items, nextItem];
+      setCompanyWarehouse(companyId, updated);
+      renderAll();
+      openCompany(companyId);
+      message('#company-msg', `Lagerbestand von ${product_name} aktualisiert.`, true);
+    }
+
+    function renderInvoices() {
+      $('#invoice-rows').innerHTML = state.invoices.length
+        ? state.invoices.map(i => `<tr><td>${esc(i.id)}</td><td>${esc(i.from_account_id)}</td><td>${esc(i.to_account_id)}</td><td class="money">${money(i.amount)}</td><td><span class="tag ${esc(i.status)}">${esc(i.status)}</span></td><td>${i.status === 'open' ? `<button class="btn" data-pay="${esc(i.id)}">Bezahlen</button>` : '-'}</td></tr>`).join('')
+        : '<tr><td colspan="6" class="empty">Keine Rechnungen.</td></tr>';
+      $$('[data-pay]').forEach(button => button.addEventListener('click', () => payInvoice(button.dataset.pay)));
+    }
+
+    function renderVehicles() {
+      $('#vehicle-rows').innerHTML = state.vehicles.length
+        ? state.vehicles.map(v => `<tr><td>${esc(v.vehicle_id)}</td><td>${esc(v.name)}</td><td>${esc(v.vehicle_class)}</td><td class="money">${money(v.price)}</td><td><span class="tag ${esc(v.status)}">${esc(v.status)}</span></td><td><div class="actions"><button class="btn alt" data-assign="${esc(v.vehicle_id)}">Zuweisen</button><button class="btn warn" data-unregister="${esc(v.vehicle_id)}">Abmelden</button></div></td></tr>`).join('')
+        : '<tr><td colspan="6" class="empty">Keine Fahrzeuge.</td></tr>';
+      $$('[data-assign]').forEach(button => button.addEventListener('click', () => assignVehicle(button.dataset.assign)));
+      $$('[data-unregister]').forEach(button => button.addEventListener('click', () => unregisterVehicle(button.dataset.unregister)));
+    }
+
+    function renderProducts() {
+      const term = ($('#catalog-search').value || '').toLowerCase();
+      const products = getCompanyCatalog().filter(p => String(p.item_name).toLowerCase().includes(term));
+      $('#products').innerHTML = products.length
+        ? products.map(p => `<div class="product"><div><strong>${esc(p.item_name)}</strong><small>${esc(p.company_name || 'Gnadental Logistik')}</small></div><div><span class="money">${money(p.unit_price)}</span><button class="btn alt" data-add="${esc(p.id)}">In den Warenkorb</button></div></div>`).join('')
+        : '<p class="empty">Keine Produkte gefunden.</p>';
+
+      $$('[data-add]').forEach(button => button.addEventListener('click', () => {
+        const item = getCompanyCatalog().find(p => String(p.id) === button.dataset.add);
+        if (item) {
+          state.cart.push(item);
+          renderCart();
+          message('#cart-msg', `${item.item_name} in den Warenkorb gelegt.`, true);
+        }
+      }));
+    }
+
+    function renderCart() {
+      $('#cart').innerHTML = state.cart.length
+        ? state.cart.map((p, i) => `<li>${esc(p.item_name)} - ${money(p.unit_price)} <button class="btn alt" data-remove="${i}">Entfernen</button></li>`).join('')
+        : '<li>Der Warenkorb ist leer.</li>';
+      $('#cart-total').textContent = state.cart.reduce((sum, p) => sum + Number(p.unit_price), 0).toFixed(2);
+      $$('[data-remove]').forEach(button => button.addEventListener('click', () => {
+        state.cart.splice(Number(button.dataset.remove), 1);
+        renderCart();
+      }));
+    }
+
+    function renderAdmin() {
+      $('#admin-companies').innerHTML = state.companies.filter(c => c.status === 'pending').map(c => `<p><strong>${esc(c.id)}</strong> · ${esc(c.company_name)} <button class="btn" data-approve-company="${esc(c.id)}">Bestätigen</button></p>`).join('') || '<p class="empty">Keine offenen Anträge.</p>';
+      $('#admin-accounts').innerHTML = state.accounts.filter(a => a.status === 'pending').map(a => `<p>Konto ${esc(a.id)} (${esc(a.type)}) <input data-capital="${esc(a.id)}" type="number" value="0" step="0.01" style="width:100px;padding:7px"><button class="btn" data-approve-account="${esc(a.id)}">Aktivieren</button></p>`).join('') || '<p class="empty">Keine offenen Kontoanträge.</p>';
+      $('#admin-citizens').innerHTML = state.citizens.map(c => `<tr><td>${esc(c.citizen_id)}</td><td>${esc(c.first_name)} ${esc(c.last_name)}</td><td>${esc(c.birthdate)}</td><td><div class="actions"><button class="btn alt" data-edit-citizen="${esc(c.citizen_id)}">Bearbeiten</button><button class="btn warn" data-delete-citizen="${esc(c.citizen_id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="4" class="empty">Keine Bürger vorhanden.</td></tr>';
+      $('#admin-company-list').innerHTML = state.companies.map(c => `<tr><td><strong>${esc(c.id)}</strong></td><td>${esc(c.company_name)}</td><td>${esc(c.sector)}</td><td>${esc(c.owner_citizen_id || '-')}</td><td><span class="tag ${esc(c.status)}">${esc(c.status)}</span></td><td><div class="actions"><button class="btn alt" data-edit-company="${esc(c.id)}">Bearbeiten</button><button class="btn warn" data-delete-company="${esc(c.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="6" class="empty">Keine Unternehmen vorhanden.</td></tr>';
+
+      $$('[data-approve-company]').forEach(button => button.addEventListener('click', () => approveCompany(button.dataset.approveCompany)));
+      $$('[data-approve-account]').forEach(button => button.addEventListener('click', () => approveAccount(button.dataset.approveAccount)));
+      $$('[data-edit-citizen]').forEach(button => button.addEventListener('click', () => editCitizen(button.dataset.editCitizen)));
+      $$('[data-delete-citizen]').forEach(button => button.addEventListener('click', () => deleteRecord('citizens', 'citizen_id', button.dataset.deleteCitizen, 'Bürger')));
+      $$('[data-edit-company]').forEach(button => button.addEventListener('click', () => editCompany(button.dataset.editCompany)));
+      $$('[data-delete-company]').forEach(button => button.addEventListener('click', () => deleteRecord('companies', 'id', button.dataset.deleteCompany, 'Unternehmen')));
+    }
+
+    async function insert(table, payload, msg) {
+      const result = await db.from(table).insert(payload);
+      if (result.error) throw result.error;
+      if (msg) message(msg, 'Gespeichert.', true);
+      await loadAll();
+    }
+
+    $('#citizen-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      try {
+        await insert('citizens', { citizen_id: id('CIT'), first_name: f.get('first_name'), last_name: f.get('last_name'), birthdate: f.get('birthdate') }, '#citizen-msg');
+        e.target.reset();
+      } catch (err) {
+        message('#citizen-msg', err.message);
+      }
+    });
+
+    $('#company-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      try {
+        await insert('companies', { company_name: f.get('company_name'), owner_citizen_id: f.get('owner_citizen_id') || null, sector: f.get('sector'), description: f.get('description'), status: 'pending' }, '#company-msg');
+        e.target.reset();
+      } catch (err) {
+        message('#company-msg', err.message);
+      }
+    });
+
+    $('#account-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      const holder = f.get('holder_id');
+      const payload = { type: f.get('type'), balance: 0, status: 'pending', ...(f.get('type') === 'unternehmen' ? { company_id: holder } : { citizen_id: holder }) };
+      try {
+        await insert('accounts', payload, '#account-msg');
+        e.target.reset();
+      } catch (err) {
+        message('#account-msg', err.message);
+      }
+    });
+
+    $('#invoice-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      const senderType = f.get('sender_type');
+      const senderId = f.get('sender_id');
+      const receiverType = f.get('receiver_type');
+      const receiverId = f.get('receiver_id');
+      const amount = Number(f.get('amount') || 0);
+
+      if (!senderId || !receiverId || !amount || amount <= 0) {
+        message('#invoice-msg', 'Bitte alle Felder korrekt ausfüllen.');
+        return;
+      }
+
+      const senderAccount = getAccountForEntity(senderType, senderId);
+      const receiverAccount = getAccountForEntity(receiverType, receiverId);
+
+      if (!senderAccount || !receiverAccount) {
+        message('#invoice-msg', 'Für die Auswahl existiert kein aktives Konto.');
+        return;
+      }
+
+      const invoice = {
+        id: id('INV'),
+        from_account_id: senderAccount.id,
+        to_account_id: receiverAccount.id,
+        amount,
+        reason: f.get('reason') || 'Rechnung',
+        status: 'paid'
+      };
+
+      try {
+        const result = await db.from('invoices').insert(invoice);
+        if (result.error) throw result.error;
+
+        senderAccount.balance = Number(senderAccount.balance || 0) - amount;
+        receiverAccount.balance = Number(receiverAccount.balance || 0) + amount;
+
+        saveAccountMovement({ id: id('MOV'), type: 'outgoing', amount, account_id: senderAccount.id, company_id: senderType === 'company' ? senderId : null, receiver_company_id: receiverType === 'company' ? receiverId : null, note: invoice.reason });
+        saveAccountMovement({ id: id('MOV'), type: 'incoming', amount, account_id: receiverAccount.id, company_id: receiverType === 'company' ? receiverId : null, sender_company_id: senderType === 'company' ? senderId : null, note: invoice.reason });
+
+        state.invoices.unshift(invoice);
+        message('#invoice-msg', 'Rechnung wurde erfolgreich gestellt.', true);
+        e.target.reset();
+        renderInvoices();
+      } catch (err) {
+        state.invoices.unshift({ ...invoice, created_at: new Date().toISOString() });
+        saveAccountMovement({ id: id('MOV'), type: 'outgoing', amount, account_id: senderAccount.id, company_id: senderType === 'company' ? senderId : null, receiver_company_id: receiverType === 'company' ? receiverId : null, note: invoice.reason });
+        saveAccountMovement({ id: id('MOV'), type: 'incoming', amount, account_id: receiverAccount.id, company_id: receiverType === 'company' ? receiverId : null, sender_company_id: senderType === 'company' ? senderId : null, note: invoice.reason });
+        message('#invoice-msg', 'Rechnung lokal gespeichert. Supabase-Fehler: ' + err.message, false);
+        renderInvoices();
+      }
+    });
+
+    $('#vehicle-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      try {
+        await insert('vehicles', { vehicle_id: id('VEH'), name: f.get('name'), vehicle_class: f.get('vehicle_class'), price: Number(f.get('price')), availability: f.get('availability'), status: 'neu', owner_citizen_id: null }, '#vehicle-msg');
+        e.target.reset();
+      } catch (err) {
+        message('#vehicle-msg', err.message);
+      }
+    });
+
+    $('#logistics-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      try {
+        await insert('logistics', { item_name: f.get('item_name'), quantity: Number(f.get('quantity')), unit_price: Number(f.get('unit_price')), direction: f.get('direction') }, '#logistics-msg');
+        const existing = state.products.find(p => p.item_name === f.get('item_name'));
+        if (!existing) await insert('logistics_items', { item_name: f.get('item_name'), unit_price: Number(f.get('unit_price')) });
+        e.target.reset();
+      } catch (err) {
+        message('#logistics-msg', err.message);
+      }
+    });
+
+    $('#discount-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      const item = state.products.find(p => p.item_name === f.get('item_name'));
+      if (!item) return message('#logistics-msg', 'Artikel im Katalog nicht gefunden.');
+
+      const result = await db.from('logistics_items').update({ unit_price: Number(item.unit_price) * (1 - Number(f.get('percent')) / 100) }).eq('id', item.id);
+      if (result.error) message('#logistics-msg', result.error.message);
+      else {
+        message('#logistics-msg', 'Preis aktualisiert.', true);
+        loadAll();
+      }
+    });
+
+    $('#catalog-search').addEventListener('input', renderProducts);
+    $('#invoice-sender-type').addEventListener('change', updateEntityDropdowns);
+    $('#invoice-receiver-type').addEventListener('change', updateEntityDropdowns);
+
+    async function rpc(name, args, msg) {
+      const result = await db.rpc(name, args);
+      if (result.error) throw result.error;
+      if (msg) message(msg, 'Vorgang erfolgreich.', true);
+      await loadAll();
+    }
+
+    async function payInvoice(invoiceId) {
+      try {
+        await rpc('pay_invoice', { invoice_id: invoiceId }, '#invoice-msg');
+      } catch (err) {
+        message('#invoice-msg', 'Zahlung fehlgeschlagen: ' + err.message);
+      }
+    }
+
+    async function assignVehicle(vehicleId) {
+      const choice = prompt('Zuweisen an: 1=Bürger, 2=Unternehmen', '1');
+      if (!choice) return;
+      const targetId = prompt(choice === '2' ? 'Unternehmens-ID eingeben:' : 'Bürger-ID eingeben:');
+      if (!targetId) return;
+
+      const payload = choice === '2' ? { company_id: targetId, owner_citizen_id: null } : { owner_citizen_id: targetId, company_id: null };
+
+      try {
+        const result = await db.from('vehicles').update(payload).eq('vehicle_id', vehicleId);
+        if (result.error) throw result.error;
+        message('#vehicle-msg', 'Fahrzeug erfolgreich zugewiesen.', true);
+        await loadAll();
+      } catch (err) {
+        message('#vehicle-msg', err.message);
+      }
+    }
+
+    async function unregisterVehicle(vehicleId) {
+      if (!confirm('Fahrzeug wirklich abmelden?')) return;
+      try {
+        const result = await db.from('vehicles').update({ status: 'Occasion', company_id: null, owner_citizen_id: null }).eq('vehicle_id', vehicleId);
+        if (result.error) throw result.error;
+        message('#vehicle-msg', 'Fahrzeug wurde abgemeldet und als Occasion markiert.', true);
+        await loadAll();
+      } catch (err) {
+        message('#vehicle-msg', err.message);
+      }
+    }
+
+    async function editCitizen(citizenId) {
+      const citizen = state.citizens.find(item => item.citizen_id === citizenId);
+      if (!citizen) return;
+
+      const firstName = prompt('Vorname:', citizen.first_name);
+      if (firstName === null) return;
+      const lastName = prompt('Nachname:', citizen.last_name);
+      if (lastName === null) return;
+      const birthdate = prompt('Geburtsdatum (YYYY-MM-DD):', citizen.birthdate || '');
+      if (birthdate === null) return;
+
+      if (!firstName.trim() || !lastName.trim() || !/^\d{4}-\d{2}-\d{2}$/.test(birthdate)) return alert('Bitte gültige Bürgerdaten eingeben.');
+
+      const result = await db.from('citizens').update({ first_name: firstName.trim(), last_name: lastName.trim(), birthdate }).eq('citizen_id', citizenId);
+      if (result.error) alert('Bürger konnte nicht geändert werden: ' + result.error.message);
+      else loadAll();
+    }
+
+    async function editCompany(companyId) {
+      const company = state.companies.find(item => String(item.id) === String(companyId));
+      if (!company) return;
+
+      const name = prompt('Unternehmensname:', company.company_name);
+      if (name === null) return;
+      const sector = prompt('Bereich:', company.sector || '');
+      if (sector === null) return;
+      const description = prompt('Beschreibung:', company.description || '');
+      if (description === null) return;
+
+      if (!name.trim() || !sector.trim()) return alert('Name und Bereich dürfen nicht leer sein.');
+
+      const result = await db.from('companies').update({ company_name: name.trim(), sector: sector.trim(), description: description.trim() }).eq('id', companyId);
+      if (result.error) alert('Unternehmen konnte nicht geändert werden: ' + result.error.message);
+      else loadAll();
+    }
+
+    async function deleteRecord(table, field, value, label) {
+      if (!confirm(`${label} wirklich endgültig löschen?`)) return;
+      const result = await db.from(table).delete().eq(field, value);
+      if (result.error) {
+        alert(`${label} konnte nicht gelöscht werden: ${result.error.message}`);
+        return;
+      }
+      if (state.selected?.citizen_id === value) {
+        state.selected = null;
+        $('#citizen-detail').textContent = 'Wähle einen Bürger aus der Liste.';
+        $('#citizen-detail').className = 'empty';
+      }
+      loadAll();
+    }
+
+    async function approveCompany(id) {
+      try {
+        await db.from('companies').update({ status: 'active' }).eq('id', id);
+        loadAll();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    async function approveAccount(id) {
+      const capital = Number($(`[data-capital="${id}"]`).value || 0);
+      try {
+        await db.from('accounts').update({ status: 'active', balance: capital }).eq('id', id);
+        loadAll();
+      } catch (err) {
+        alert(err.message);
+      }
+    }
+
+    $('#checkout').addEventListener('click', async () => {
+      if (!state.cart.length) return message('#cart-msg', 'Der Warenkorb ist leer.');
+      const holder = prompt('Bürger-ID oder Unternehmens-ID für die Zahlung:');
+      if (!holder) return;
+
+      const account = state.accounts.find(a => (a.citizen_id === holder || a.company_id === holder) && a.status === 'active');
+      if (!account) return message('#cart-msg', 'Kein aktives Konto gefunden.');
+
+      try {
+        await rpc('create_order', { account_id: account.id, items_json: JSON.stringify(state.cart), total_amount: state.cart.reduce((sum, p) => sum + Number(p.unit_price), 0) }, '#cart-msg');
+        state.cart = [];
+        renderCart();
+      } catch (err) {
+        message('#cart-msg', 'Bestellung fehlgeschlagen: ' + err.message);
+      }
+    });
+
+    const tables = ['citizens', 'companies', 'accounts', 'invoices', 'vehicles', 'licenses', 'logistics_items', 'orders'];
+    tables.forEach(table => db.channel('gnadental-' + table).on('postgres_changes', { event: '*', schema: 'public', table }, () => loadAll()).subscribe(status => {
+      if (status === 'SUBSCRIBED') setConnection('Supabase verbunden · Realtime aktiv');
+    }));
+
+    async function start() {
+      setConnection('Supabase wird verbunden ...');
+      try {
+        const result = await db.from('citizens').select('citizen_id').limit(1);
+        if (result.error) setConnection('Supabase-Fehler: ' + result.error.message, true);
+        else setConnection('Supabase verbunden · Realtime startet');
+      } catch (error) {
+        setConnection('Supabase-Fehler: ' + error.message, true);
+      }
+      await loadAll();
+      updateEntityDropdowns();
+    }
+
+    start();
   </script>
 </body>
 </html>
