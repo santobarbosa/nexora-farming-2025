@@ -1,0 +1,963 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <title>LS25 – Gnadental Roleplay</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
+
+  <style>
+    :root {
+      --bg: #0b1220;
+      --bg-soft: #111827;
+      --accent: #22c55e;
+      --accent-soft: #16a34a;
+      --text: #e5e7eb;
+      --danger: #ef4444;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, sans-serif; }
+    body { background: radial-gradient(circle at top, #1f2937, #020617); color: var(--text); min-height: 100vh; }
+
+    header { padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; background: rgba(15,23,42,0.9); position: sticky; top: 0; z-index: 20; backdrop-filter: blur(10px); }
+    header h1 { font-size: 1.4rem; letter-spacing: 0.08em; text-transform: uppercase; }
+    nav { display: flex; gap: 0.75rem; }
+    nav button {
+      background: transparent; border: 1px solid #374151; color: var(--text);
+      padding: 0.4rem 0.9rem; border-radius: 999px; cursor: pointer; font-size: 0.85rem;
+    }
+    nav button.active { background: var(--accent-soft); border-color: var(--accent); }
+
+    main { padding: 1.5rem 2rem; max-width: 1200px; margin: 0 auto; }
+    section { display: none; animation: fadeIn 0.4s ease-out; }
+    section.active { display: block; }
+
+    .card {
+      background: linear-gradient(135deg, #020617, #111827);
+      border-radius: 1rem; padding: 1.25rem 1.5rem; border: 1px solid #1f2937;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.45); margin-bottom: 1rem;
+    }
+
+    .grid { display: grid; gap: 1rem; }
+    .grid-2 { grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      background: var(--accent-soft); border: none; color: #ecfdf5;
+      padding: 0.5rem 1rem; border-radius: 999px; cursor: pointer; font-size: 0.9rem;
+    }
+    .btn-outline { background: transparent; border: 1px solid #4b5563; color: var(--text); }
+    .btn-danger { background: var(--danger); }
+
+    input, select {
+      width: 100%; padding: 0.45rem 0.6rem; border-radius: 0.5rem;
+      border: 1px solid #374151; background: #020617; color: var(--text); font-size: 0.9rem;
+    }
+
+    label { font-size: 0.8rem; color: #9ca3af; margin-bottom: 0.2rem; display: block; }
+    .form-row { margin-bottom: 0.6rem; }
+
+    .flex { display: flex; gap: 0.75rem; align-items: center; }
+    .flex-between { display: flex; justify-content: space-between; align-items: center; }
+
+    .badge { display: inline-block; padding: 0.15rem 0.5rem; border-radius: 999px; font-size: 0.7rem; background: #1f2937; }
+
+    .table { width: 100%; border-collapse: collapse; font-size: 0.85rem; margin-top: 0.5rem; }
+    .table th, .table td { padding: 0.4rem 0.5rem; border-bottom: 1px solid #1f2937; text-align: left; }
+    .table th { font-weight: 600; color: #9ca3af; }
+
+    .pill { border-radius: 999px; padding: 0.2rem 0.6rem; background: #111827; font-size: 0.75rem; }
+    .warning { color: var(--danger); font-size: 0.8rem; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(4px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* responsive */
+    @media (max-width: 720px) {
+      header { padding: 0.8rem 1rem; }
+      main { padding: 1rem; }
+      nav { flex-wrap: wrap; gap: 0.5rem; }
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    <h1>Gnadental LS25 – Verwaltung & Roleplay</h1>
+    <nav>
+      <button data-target="home" class="active">Home</button>
+      <button data-target="citizens">Bürger</button>
+      <button data-target="companies">Unternehmen</button>
+      <button data-target="bank">Bank</button>
+      <button data-target="vehicles">Fahrzeuge</button>
+      <button data-target="logistics">Logistik</button>
+      <button data-target="catalog">Katalog</button>
+      <button data-target="admin">Admin</button>
+    </nav>
+  </header>
+
+  <main>
+
+    <!-- HOME -->
+    <section id="home" class="active">
+      <div class="card">
+        <h2>Server & Karte</h2>
+        <p>Map: Gnadental</p>
+        <ul style="margin-top:0.5rem; font-size:0.9rem; color:#9ca3af;">
+          <li>Online Spieler: <span id="server-players">–</span></li>
+          <li>Wirtschaftsstatus: <span id="server-economy">Stabil</span></li>
+          <li>Letzter Neustart: <span id="server-restart">–</span></li>
+        </ul>
+      </div>
+
+      <div class="card">
+        <h2>Bürger werden</h2>
+        <p style="font-size:0.9rem; color:#9ca3af;">Registriere dich als Bürger von Gnadental, erhalte eine Bürger‑ID und verwalte deine Akte.</p>
+        <button class="btn" onclick="showSection('citizens')">Als Bürger registrieren</button>
+      </div>
+    </section>
+
+    <!-- BÜRGER -->
+    <section id="citizens">
+      <div class="card">
+        <h2>Bürger registrieren</h2>
+        <form id="citizen-form">
+          <div class="grid grid-2">
+            <div class="form-row">
+              <label>Vorname</label>
+              <input type="text" name="first_name" required />
+            </div>
+            <div class="form-row">
+              <label>Nachname</label>
+              <input type="text" name="last_name" required />
+            </div>
+            <div class="form-row">
+              <label>Geburtsdatum</label>
+              <input type="date" name="birthdate" required />
+            </div>
+          </div>
+          <button type="submit" class="btn">Speichern</button>
+        </form>
+        <p class="warning" id="citizen-msg"></p>
+      </div>
+
+      <div class="card">
+        <h2>Bürgerliste</h2>
+        <table class="table" id="citizen-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Geburtsdatum</th>
+              <th>Akte</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+
+      <div class="card">
+        <h2>Persönliche Akte</h2>
+        <div id="citizen-detail" style="display:none;">
+          <p id="citizen-detail-name"></p>
+          <p id="citizen-detail-id"></p>
+
+          <h3>Konten</h3>
+          <p>Privat: <span id="citizen-detail-balance">–</span></p>
+          <p>Unternehmen: <span id="citizen-detail-company-balance">–</span></p>
+
+          <h3>Führerscheine</h3>
+          <form id="license-form">
+            <input type="text" name="license_class" placeholder="z.B. T" />
+            <button class="btn btn-outline">Hinzufügen</button>
+          </form>
+          <ul id="license-list"></ul>
+
+          <h3>Fahrzeuge</h3>
+          <ul id="citizen-vehicles"></ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- UNTERNEHMEN -->
+    <section id="companies">
+      <div class="card">
+        <h2>Unternehmen registrieren</h2>
+        <form id="company-form">
+          <div class="grid grid-2">
+            <div class="form-row">
+              <label>Name</label>
+              <input type="text" name="company_name" required />
+            </div>
+            <div class="form-row">
+              <label>Inhaber (Bürger-ID)</label>
+              <input type="text" name="owner_citizen_id" />
+            </div>
+            <div class="form-row">
+              <label>Bereich</label>
+              <select name="sector">
+                <option>Polizei</option>
+                <option>Transport</option>
+                <option>Logistik</option>
+                <option>Bauer</option>
+                <option>Kleinfahrzeughändler</option>
+                <option>Werkstatt</option>
+                <option>Bauunternehmen</option>
+                <option>Handel</option>
+              </select>
+            </div>
+            <div class="form-row">
+              <label>Beschreibung</label>
+              <input type="text" name="description" />
+            </div>
+          </div>
+          <button class="btn">Anmelden</button>
+        </form>
+        <p class="warning" id="company-msg"></p>
+      </div>
+
+      <div class="card">
+        <h2>Unternehmen</h2>
+        <table class="table" id="company-table">
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Bereich</th>
+              <th>Inhaber</th>
+              <th>Status</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- BANK -->
+    <section id="bank">
+      <div class="card">
+        <h2>Konto anlegen</h2>
+        <form id="account-form">
+          <div class="form-row">
+            <label>Bürger-ID</label>
+            <input type="text" name="citizen_id" required />
+          </div>
+          <div class="form-row">
+            <label>Typ</label>
+            <select name="type">
+              <option value="privat">Privat</option>
+              <option value="unternehmen">Unternehmen</option>
+            </select>
+          </div>
+          <button class="btn">Anlegen</button>
+        </form>
+        <p class="warning" id="account-msg"></p>
+      </div>
+
+      <div class="card">
+        <h2>Rechnung stellen</h2>
+        <form id="invoice-form">
+          <input type="text" name="from_account_id" placeholder="Von Konto-ID" required />
+          <input type="text" name="to_account_id" placeholder="An Konto-ID" required />
+          <input type="number" step="0.01" name="amount" placeholder="Betrag" required />
+          <input type="text" name="reason" placeholder="Grund" />
+          <button class="btn">Erstellen</button>
+        </form>
+        <p class="warning" id="invoice-msg"></p>
+      </div>
+
+      <div class="card">
+        <h2>Offene Rechnungen</h2>
+        <table class="table" id="invoice-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Von</th>
+              <th>An</th>
+              <th>Betrag</th>
+              <th>Status</th>
+              <th>Aktion</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- FAHRZEUGE -->
+    <section id="vehicles">
+      <div class="card">
+        <h2>Fahrzeug erfassen</h2>
+        <form id="vehicle-form">
+          <input type="text" name="vehicle_name" placeholder="Name" required />
+          <input type="text" name="vehicle_class" placeholder="Klasse" required />
+          <input type="number" step="0.01" name="price" placeholder="Preis" required />
+          <select name="availability">
+            <option value="verkauf">Verkauf</option>
+            <option value="miete">Miete</option>
+          </select>
+          <button class="btn">Speichern</button>
+        </form>
+        <p class="warning" id="vehicle-msg"></p>
+      </div>
+
+      <div class="card">
+        <h2>Fahrzeuge</h2>
+        <table class="table" id="vehicle-table">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Klasse</th>
+              <th>Status</th>
+              <th>Preis</th>
+              <th>Aktion</th>
+            </tr>
+          </thead>
+          <tbody></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- LOGISTIK -->
+    <section id="logistics">
+      <div class="card">
+        <h2>Logistik erfassen</h2>
+        <form id="logistics-form">
+          <input type="text" name="item_name" placeholder="Artikel" required />
+          <input type="number" name="quantity" placeholder="Menge" required />
+          <input type="number" step="0.01" name="unit_price" placeholder="Preis" required />
+          <select name="direction">
+            <option value="eingang">Eingang</option>
+            <option value="ausgang">Ausgang</option>
+          </select>
+          <button class="btn">Speichern</button>
+        </form>
+        <p class="warning" id="logistics-msg"></p>
+      </div>
+
+      <div class="card">
+        <h2>Preisaktionen</h2>
+        <form id="discount-form">
+          <div class="grid grid-2">
+            <div class="form-row">
+              <label>Artikelname</label>
+              <input type="text" name="discount_item_name" placeholder="z.B. Saatgut" required />
+            </div>
+            <div class="form-row">
+              <label>Rabatt in %</label>
+              <input type="number" name="discount_percent" value="30" />
+            </div>
+          </div>
+          <button class="btn btn-outline">Aktion setzen</button>
+        </form>
+      </div>
+    </section>
+
+    <!-- KATALOG / BESTELLUNGEN -->
+    <section id="catalog">
+      <div class="card">
+        <div class="flex-between">
+          <h2>Katalog</h2>
+          <input type="text" id="catalog-search" placeholder="Nach Produkt suchen..." style="max-width:260px;" />
+        </div>
+        <div id="catalog-list" style="margin-top:0.7rem; display:grid; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); gap:0.8rem;">
+        </div>
+      </div>
+
+      <div class="card">
+        <h2>Warenkorb</h2>
+        <ul id="cart-list" style="font-size:0.85rem;"></ul>
+        <p style="margin-top:0.4rem;">Gesamt: <span id="cart-total">0.00</span> €</p>
+        <button class="btn" onclick="checkout()">Jetzt bezahlen</button>
+        <p class="warning" id="cart-msg"></p>
+      </div>
+    </section>
+
+    <!-- ADMIN -->
+    <section id="admin">
+      <div class="card">
+        <h2>Admin Panel (offen zugänglich)</h2>
+        <p style="font-size:0.9rem; color:#9ca3af;">Unternehmensanfragen, Kontoeröffnungen und Freigaben.</p>
+      </div>
+
+      <div class="grid grid-2">
+        <div class="card">
+          <h3>Unternehmensanfragen</h3>
+          <table class="table" id="admin-company-requests">
+            <thead>
+              <tr><th>Name</th><th>Bereich</th><th>Inhaber</th><th>Aktion</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+
+        <div class="card">
+          <h3>Kontoeröffnungen</h3>
+          <table class="table" id="admin-account-requests">
+            <thead>
+              <tr><th>Konto‑ID</th><th>Bürger/Unternehmen</th><th>Typ</th><th>Startkapital</th><th>Aktion</th></tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <script>
+    // ------------------ Supabase Setup ------------------
+    const supabaseUrl = "YOUR_SUPABASE_URL";
+    const supabaseAnonKey = "YOUR_SUPABASE_ANON_KEY";
+    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+    // ------------------ Navigation ------------------
+    const navButtons = document.querySelectorAll("nav button");
+    const sections = document.querySelectorAll("main section");
+
+    function showSection(id) {
+      sections.forEach(s => s.classList.toggle("active", s.id === id));
+      navButtons.forEach(b => b.classList.toggle("active", b.dataset.target === id));
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+
+    navButtons.forEach(btn => {
+      btn.addEventListener("click", () => showSection(btn.dataset.target));
+    });
+
+    // ------------------ Helper: ID Generator ------------------
+    function generateCitizenId() {
+      const rand = Math.floor(Math.random() * 9999).toString().padStart(4, "0");
+      return "CIT-" + rand;
+    }
+
+    function generateVehicleId() {
+      const rand = Math.floor(Math.random() * 9999).toString().padStart(4, "0");
+      return "VEH-" + rand;
+    }
+
+    // ------------------ Bürger: Create & List ------------------
+    const citizenForm = document.getElementById("citizen-form");
+    const citizenMsg = document.getElementById("citizen-msg");
+    const citizenTableBody = document.querySelector("#citizen-table tbody");
+    let selectedCitizen = null;
+
+    citizenForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      citizenMsg.textContent = "";
+      const formData = new FormData(citizenForm);
+      const citizen_id = generateCitizenId();
+
+      const payload = {
+        citizen_id,
+        first_name: formData.get("first_name"),
+        last_name: formData.get("last_name"),
+        birthdate: formData.get("birthdate")
+      };
+
+      const { data, error } = await supabase.from("citizens").insert(payload).select().single();
+      if (error) {
+        citizenMsg.textContent = "Fehler beim Registrieren: " + error.message;
+        return;
+      }
+      citizenForm.reset();
+      loadCitizens();
+    });
+
+    async function loadCitizens() {
+      const { data, error } = await supabase.from("citizens").select("*").order("citizen_id");
+      if (error) {
+        citizenMsg.textContent = "Fehler beim Laden der Bürger: " + error.message;
+        return;
+      }
+      citizenTableBody.innerHTML = "";
+      data.forEach(c => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${c.citizen_id}</td>
+          <td>${c.first_name} ${c.last_name}</td>
+          <td>${c.birthdate || ""}</td>
+          <td><button class="btn btn-outline" data-id="${c.citizen_id}">Akte öffnen</button></td>
+        `;
+        tr.querySelector("button").addEventListener("click", () => openCitizenDetail(c));
+        citizenTableBody.appendChild(tr);
+      });
+    }
+
+    function openCitizenDetail(c) {
+      selectedCitizen = c;
+      const detail = document.getElementById("citizen-detail");
+      detail.style.display = "block";
+      document.getElementById("citizen-detail-name").textContent = c.first_name + " " + c.last_name;
+      document.getElementById("citizen-detail-id").textContent = "Bürger‑ID: " + c.citizen_id;
+      loadCitizenAccounts(c.citizen_id);
+      loadCitizenLicenses(c.citizen_id);
+      loadCitizenVehicles(c.citizen_id);
+      showSection('citizens');
+    }
+
+    async function loadCitizenAccounts(citizen_id) {
+      const { data, error } = await supabase.from("accounts").select("*").eq("citizen_id", citizen_id);
+      if (error) return;
+      let privat = "–", company = "–";
+      data.forEach(a => {
+        if (a.type === "privat") privat = (a.balance || 0).toFixed(2) + " €";
+        if (a.type === "unternehmen") company = (a.balance || 0).toFixed(2) + " €";
+      });
+      document.getElementById("citizen-detail-balance").textContent = privat;
+      document.getElementById("citizen-detail-company-balance").textContent = company;
+    }
+
+    // ------------------ Führerscheine ------------------
+    const licenseForm = document.getElementById("license-form");
+    const licenseList = document.getElementById("license-list");
+
+    licenseForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      if (!selectedCitizen) return;
+      const formData = new FormData(licenseForm);
+      const cls = formData.get("license_class");
+      if (!cls) return;
+      await supabase.from("licenses").insert({
+        citizen_id: selectedCitizen.citizen_id,
+        license_class: cls
+      });
+      licenseForm.reset();
+      loadCitizenLicenses(selectedCitizen.citizen_id);
+    });
+
+    async function loadCitizenLicenses(citizen_id) {
+      const { data, error } = await supabase.from("licenses").select("*").eq("citizen_id", citizen_id);
+      if (error) return;
+      licenseList.innerHTML = "";
+      data.forEach(l => {
+        const li = document.createElement("li");
+        li.textContent = l.license_class;
+        licenseList.appendChild(li);
+      });
+    }
+
+    // ------------------ Bürgerfahrzeuge ------------------
+    const citizenVehiclesList = document.getElementById("citizen-vehicles");
+
+    async function loadCitizenVehicles(citizen_id) {
+      const { data, error } = await supabase.from("vehicles").select("*").eq("owner_citizen_id", citizen_id);
+      if (error) return;
+      citizenVehiclesList.innerHTML = "";
+      data.forEach(v => {
+        const li = document.createElement("li");
+        li.innerHTML = `
+          ${v.vehicle_id} – ${v.name} (${v.vehicle_class}) 
+          <button class="btn btn-outline" style="margin-left:0.4rem;">Abmelden</button>
+        `;
+        li.querySelector("button").addEventListener("click", () => confirmVehicleUnregister(v));
+        citizenVehiclesList.appendChild(li);
+      });
+    }
+
+    async function confirmVehicleUnregister(vehicle) {
+      const ok = confirm("Sind Sie beim Händler und können Ihr Fahrzeug da direkt abgeben?");
+      if (!ok) return;
+      const { error } = await supabase.from("vehicles").update({
+        status: "occasion",
+        owner_citizen_id: null
+      }).eq("vehicle_id", vehicle.vehicle_id);
+      if (!error && selectedCitizen) {
+        loadCitizenVehicles(selectedCitizen.citizen_id);
+        loadVehicles();
+      }
+    }
+
+    // ------------------ Unternehmen ------------------
+    const companyForm = document.getElementById("company-form");
+    const companyMsg = document.getElementById("company-msg");
+    const companyTableBody = document.querySelector("#company-table tbody");
+
+    companyForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      companyMsg.textContent = "";
+      const fd = new FormData(companyForm);
+      const payload = {
+        company_name: fd.get("company_name"),
+        owner_citizen_id: fd.get("owner_citizen_id") || null,
+        sector: fd.get("sector"),
+        description: fd.get("description"),
+        status: "pending"
+      };
+      const { error } = await supabase.from("companies").insert(payload);
+      if (error) {
+        companyMsg.textContent = "Fehler beim Anlegen: " + error.message;
+        return;
+      }
+      companyForm.reset();
+      loadCompanies();
+      loadAdminCompanyRequests();
+    });
+
+    async function loadCompanies() {
+      const { data, error } = await supabase.from("companies").select("*");
+      if (error) {
+        companyMsg.textContent = "Fehler beim Laden: " + error.message;
+        return;
+      }
+      companyTableBody.innerHTML = "";
+      data.forEach(c => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${c.company_name}</td>
+          <td>${c.sector}</td>
+          <td>${c.owner_citizen_id || "-"}</td>
+          <td>${c.status}</td>
+        `;
+        companyTableBody.appendChild(tr);
+      });
+    }
+
+    // ------------------ Bank: Konten & Rechnungen ------------------
+    const accountForm = document.getElementById("account-form");
+    const accountMsg = document.getElementById("account-msg");
+    const invoiceForm = document.getElementById("invoice-form");
+    const invoiceMsg = document.getElementById("invoice-msg");
+    const invoiceTableBody = document.querySelector("#invoice-table tbody");
+
+    accountForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      accountMsg.textContent = "";
+      const fd = new FormData(accountForm);
+      const payload = {
+        citizen_id: fd.get("citizen_id"),
+        type: fd.get("type"),
+        balance: 0,
+        status: "pending"
+      };
+      const { error } = await supabase.from("accounts").insert(payload);
+      if (error) {
+        accountMsg.textContent = "Fehler beim Kontoanlegen: " + error.message;
+        return;
+      }
+      accountForm.reset();
+      loadAdminAccountRequests();
+    });
+
+    invoiceForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      invoiceMsg.textContent = "";
+      const fd = new FormData(invoiceForm);
+      const payload = {
+        from_account_id: fd.get("from_account_id"),
+        to_account_id: fd.get("to_account_id"),
+        amount: parseFloat(fd.get("amount")),
+        reason: fd.get("reason"),
+        status: "open"
+      };
+      const { error } = await supabase.from("invoices").insert(payload);
+      if (error) {
+        invoiceMsg.textContent = "Fehler beim Erstellen der Rechnung: " + error.message;
+        return;
+      }
+      invoiceForm.reset();
+      loadInvoices();
+    });
+
+    async function loadInvoices() {
+      const { data, error } = await supabase.from("invoices").select("*");
+      if (error) {
+        invoiceMsg.textContent = "Fehler beim Laden der Rechnungen: " + error.message;
+        return;
+      }
+      invoiceTableBody.innerHTML = "";
+      data.forEach(inv => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${inv.id}</td>
+          <td>${inv.from_account_id}</td>
+          <td>${inv.to_account_id}</td>
+          <td>${inv.amount.toFixed(2)} €</td>
+          <td>${inv.status}</td>
+          <td>${inv.status === "open" ? '<button class="btn btn-outline">Jetzt bezahlen</button>' : ''}</td>
+        `;
+        if (inv.status === "open") {
+          tr.querySelector("button").addEventListener("click", () => payInvoice(inv));
+        }
+        invoiceTableBody.appendChild(tr);
+      });
+    }
+
+    async function payInvoice(inv) {
+      const { data: fromAccArr } = await supabase.from("accounts").select("*").eq("id", inv.from_account_id).single();
+      const { data: toAccArr } = await supabase.from("accounts").select("*").eq("id", inv.to_account_id).single();
+
+      const fromBalance = (fromAccArr.balance || 0) - inv.amount;
+      const toBalance = (toAccArr.balance || 0) + inv.amount;
+
+      await supabase.from("accounts").update({ balance: fromBalance }).eq("id", inv.from_account_id);
+      await supabase.from("accounts").update({ balance: toBalance }).eq("id", inv.to_account_id);
+      await supabase.from("invoices").update({ status: "paid" }).eq("id", inv.id);
+
+      loadInvoices();
+      if (selectedCitizen) loadCitizenAccounts(selectedCitizen.citizen_id);
+    }
+
+    // ------------------ Fahrzeuge ------------------
+    const vehicleForm = document.getElementById("vehicle-form");
+    const vehicleMsg = document.getElementById("vehicle-msg");
+    const vehicleTableBody = document.querySelector("#vehicle-table tbody");
+
+    vehicleForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      vehicleMsg.textContent = "";
+      const fd = new FormData(vehicleForm);
+      const payload = {
+        vehicle_id: generateVehicleId(),
+        name: fd.get("vehicle_name"),
+        vehicle_class: fd.get("vehicle_class"),
+        price: parseFloat(fd.get("price")),
+        availability: fd.get("availability"),
+        status: "neu",
+        owner_citizen_id: null
+      };
+      const { error } = await supabase.from("vehicles").insert(payload);
+      if (error) {
+        vehicleMsg.textContent = "Fehler beim Speichern: " + error.message;
+        return;
+      }
+      vehicleForm.reset();
+      loadVehicles();
+    });
+
+    async function loadVehicles() {
+      const { data, error } = await supabase.from("vehicles").select("*");
+      if (error) {
+        vehicleMsg.textContent = "Fehler beim Laden: " + error.message;
+        return;
+      }
+      vehicleTableBody.innerHTML = "";
+      data.forEach(v => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${v.vehicle_id}</td>
+          <td>${v.name}</td>
+          <td>${v.vehicle_class}</td>
+          <td>${v.status}</td>
+          <td>${v.price.toFixed(2)} €</td>
+          <td>
+            <button class="btn btn-outline" data-action="assign">Auf Bürger anmelden</button>
+            <button class="btn btn-danger" data-action="unregister">Abmelden</button>
+          </td>
+        `;
+        const assignBtn = tr.querySelector('[data-action="assign"]');
+        const unregisterBtn = tr.querySelector('[data-action="unregister"]');
+        assignBtn.addEventListener("click", () => assignVehicleToCitizen(v));
+        unregisterBtn.addEventListener("click", () => confirmVehicleUnregister(v));
+        vehicleTableBody.appendChild(tr);
+      });
+    }
+
+    async function assignVehicleToCitizen(vehicle) {
+      const citizen_id = prompt("Bürger‑ID eingeben, auf den das Fahrzeug registriert werden soll:");
+      if (!citizen_id) return;
+      const { error } = await supabase.from("vehicles").update({
+        owner_citizen_id: citizen_id,
+        status: "aktiv"
+      }).eq("vehicle_id", vehicle.vehicle_id);
+      if (!error) {
+        loadVehicles();
+        if (selectedCitizen && selectedCitizen.citizen_id === citizen_id) {
+          loadCitizenVehicles(citizen_id);
+        }
+      }
+    }
+
+    // ------------------ Logistik ------------------
+    const logisticsForm = document.getElementById("logistics-form");
+    const logisticsMsg = document.getElementById("logistics-msg");
+    const discountForm = document.getElementById("discount-form");
+
+    logisticsForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      logisticsMsg.textContent = "";
+      const fd = new FormData(logisticsForm);
+      const payload = {
+        item_name: fd.get("item_name"),
+        quantity: parseInt(fd.get("quantity")),
+        unit_price: parseFloat(fd.get("unit_price")),
+        direction: fd.get("direction")
+      };
+      const { error } = await supabase.from("logistics").insert(payload);
+      if (error) {
+        logisticsMsg.textContent = "Fehler beim Speichern: " + error.message;
+        return;
+      }
+      logisticsForm.reset();
+      loadCatalog();
+    });
+
+    discountForm.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const fd = new FormData(discountForm);
+      const itemName = fd.get("discount_item_name");
+      const percent = parseFloat(fd.get("discount_percent"));
+      const { data, error } = await supabase.from("logistics_items").select("*").eq("item_name", itemName).single();
+      if (error || !data) {
+        logisticsMsg.textContent = "Artikel nicht gefunden oder Fehler.";
+        return;
+      }
+      const newPrice = data.unit_price * (1 - percent / 100);
+      await supabase.from("logistics_items").update({ unit_price: newPrice }).eq("id", data.id);
+      loadCatalog();
+    });
+
+    // ------------------ Katalog & Warenkorb ------------------
+    const catalogList = document.getElementById("catalog-list");
+    const catalogSearch = document.getElementById("catalog-search");
+    const cartList = document.getElementById("cart-list");
+    const cartTotalEl = document.getElementById("cart-total");
+    const cartMsg = document.getElementById("cart-msg");
+    let catalogItems = [];
+    let cart = [];
+
+    catalogSearch && catalogSearch.addEventListener("input", () => renderCatalog());
+
+    async function loadCatalog() {
+      const { data, error } = await supabase.from("logistics_items").select("*");
+      if (error) return;
+      catalogItems = data;
+      renderCatalog();
+    }
+
+    function renderCatalog() {
+      const term = (catalogSearch && catalogSearch.value || "").toLowerCase();
+      catalogList.innerHTML = "";
+      catalogItems
+        .filter(i => i.item_name.toLowerCase().includes(term))
+        .forEach(i => {
+          const div = document.createElement("div");
+          div.className = "card";
+          div.innerHTML = `
+            <h3 style="font-size:0.9rem;">${i.item_name}</h3>
+            <p style="font-size:0.8rem;">Preis: ${i.unit_price.toFixed(2)} €</p>
+            <button class="btn btn-outline">In den Warenkorb</button>
+          `;
+          div.querySelector("button").addEventListener("click", () => addToCart(i));
+          catalogList.appendChild(div);
+        });
+    }
+
+    function addToCart(item) {
+      cart.push(item);
+      renderCart();
+    }
+
+    function renderCart() {
+      cartList.innerHTML = "";
+      let total = 0;
+      cart.forEach((item, idx) => {
+        total += item.unit_price;
+        const li = document.createElement("li");
+        li.textContent = item.item_name + " – " + item.unit_price.toFixed(2) + " €";
+        cartList.appendChild(li);
+      });
+      cartTotalEl.textContent = total.toFixed(2);
+    }
+
+    async function checkout() {
+      cartMsg.textContent = "";
+      if (cart.length === 0) {
+        cartMsg.textContent = "Warenkorb ist leer.";
+        return;
+      }
+      const nameOrCompany = prompt("Bitte Bürger‑ID oder Unternehmens‑ID eingeben, die zahlen soll:");
+      if (!nameOrCompany) return;
+
+      const { data: account, error } = await supabase
+        .from("accounts")
+        .select("*")
+        .eq("citizen_id", nameOrCompany)
+        .eq("status", "active")
+        .limit(1)
+        .single();
+
+      if (error || !account) {
+        cartMsg.textContent = "Kein aktives Konto gefunden.";
+        return;
+      }
+
+      const total = parseFloat(cartTotalEl.textContent);
+      const newBalance = (account.balance || 0) - total;
+      await supabase.from("accounts").update({ balance: newBalance }).eq("id", account.id);
+
+      await supabase.from("orders").insert({
+        account_id: account.id,
+        total_amount: total,
+        items_json: JSON.stringify(cart)
+      });
+
+      cart = [];
+      renderCart();
+      cartMsg.textContent = "Bestellung erfolgreich bezahlt.";
+      if (selectedCitizen && selectedCitizen.citizen_id === nameOrCompany) {
+        loadCitizenAccounts(selectedCitizen.citizen_id);
+      }
+    }
+
+    // ------------------ Admin Panel ------------------
+    const adminCompanyBody = document.querySelector("#admin-company-requests tbody");
+    const adminAccountBody = document.querySelector("#admin-account-requests tbody");
+
+    async function loadAdminCompanyRequests() {
+      const { data, error } = await supabase.from("companies").select("*").eq("status", "pending");
+      if (error) return;
+      adminCompanyBody.innerHTML = "";
+      data.forEach(c => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${c.company_name}</td>
+          <td>${c.sector}</td>
+          <td>${c.owner_citizen_id || "-"}</td>
+          <td><button class="btn btn-outline">Bestätigen</button></td>
+        `;
+        tr.querySelector("button").addEventListener("click", async () => {
+          await supabase.from("companies").update({ status: "active" }).eq("id", c.id);
+          loadCompanies();
+          loadAdminCompanyRequests();
+        });
+        adminCompanyBody.appendChild(tr);
+      });
+    }
+
+    async function loadAdminAccountRequests() {
+      const { data, error } = await supabase.from("accounts").select("*").eq("status", "pending");
+      if (error) return;
+      adminAccountBody.innerHTML = "";
+      data.forEach(a => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td>${a.id}</td>
+          <td>${a.citizen_id || a.company_id || "-"}</td>
+          <td>${a.type}</td>
+          <td><input type="number" step="0.01" value="${a.balance || 0}" style="width:80px;" /></td>
+          <td><button class="btn btn-outline">Aktivieren</button></td>
+        `;
+        const input = tr.querySelector("input");
+        tr.querySelector("button").addEventListener("click", async () => {
+          const startBalance = parseFloat(input.value) || 0;
+          await supabase.from("accounts").update({ status: "active", balance: startBalance }).eq("id", a.id);
+          loadAdminAccountRequests();
+        });
+        adminAccountBody.appendChild(tr);
+      });
+    }
+
+    // ------------------ Initial Load ------------------
+    loadCitizens();
+    loadCompanies();
+    loadVehicles();
+    loadInvoices();
+    loadCatalog();
+    loadAdminCompanyRequests();
+    loadAdminAccountRequests();
+  </script>
+</body>
+</html>
