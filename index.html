@@ -109,6 +109,7 @@
           <li>Online Spieler: <span id="server-players">–</span></li>
           <li>Wirtschaftsstatus: <span id="server-economy">Stabil</span></li>
           <li>Letzter Neustart: <span id="server-restart">–</span></li>
+          <li>Datenbank: <span id="connection-status">Verbinde mit Supabase ...</span></li>
         </ul>
       </div>
 
@@ -411,7 +412,86 @@
     // ------------------ Supabase Setup ------------------
     const supabaseUrl = "https://mrehtxzzsjvbdggwxgzl.supabase.co";
     const supabaseAnonKey = "sb_publishable_bURYODu8FAJ32VSSCWIX5g_FBordMjD";
-    const supabase = window.supabase.createClient(supabaseUrl, supabaseAnonKey);
+
+    class LocalQuery {
+      constructor(database, table) {
+        this.database = database;
+        this.table = table;
+        this.operation = "select";
+        this.payload = null;
+        this.filters = [];
+        this.orderField = null;
+        this.limitCount = null;
+        this.singleResult = false;
+      }
+
+      select() { this.operation = this.operation === "insert" ? "insert-select" : "select"; return this; }
+      insert(payload) { this.operation = "insert"; this.payload = payload; return this; }
+      update(payload) { this.operation = "update"; this.payload = payload; return this; }
+      eq(field, value) { this.filters.push([field, value]); return this; }
+      order(field) { this.orderField = field; return this; }
+      limit(count) { this.limitCount = count; return this; }
+      single() { this.singleResult = true; return this; }
+
+      then(resolve, reject) {
+        try {
+          const result = this.database.execute(this);
+          return Promise.resolve(result).then(resolve, reject);
+        } catch (error) {
+          return Promise.reject(error).then(resolve, reject);
+        }
+      }
+    }
+
+    class LocalDatabase {
+      constructor() {
+        this.storageKey = "gnadental-local-data";
+        this.tables = JSON.parse(localStorage.getItem(this.storageKey) || "{}");
+      }
+
+      from(table) { return new LocalQuery(this, table); }
+
+      persist() { localStorage.setItem(this.storageKey, JSON.stringify(this.tables)); }
+
+      execute(query) {
+        const rows = this.tables[query.table] || (this.tables[query.table] = []);
+        if (query.operation === "insert" || query.operation === "insert-select") {
+          const values = Array.isArray(query.payload) ? query.payload : [query.payload];
+          const inserted = values.map(value => ({ id: value.id || crypto.randomUUID(), ...value }));
+          rows.push(...inserted);
+          this.persist();
+          return { data: query.singleResult ? inserted[0] : inserted, error: null };
+        }
+
+        const matches = rows.filter(row => query.filters.every(([field, value]) => row[field] === value));
+        if (query.operation === "update") {
+          matches.forEach(row => Object.assign(row, query.payload));
+          this.persist();
+          return { data: matches, error: null };
+        }
+
+        let result = [...matches];
+        if (query.orderField) result.sort((a, b) => String(a[query.orderField] || "").localeCompare(String(b[query.orderField] || "")));
+        if (query.limitCount !== null) result = result.slice(0, query.limitCount);
+        if (query.singleResult) {
+          return result.length === 1
+            ? { data: result[0], error: null }
+            : { data: null, error: { message: "Kein eindeutiger Datensatz gefunden." } };
+        }
+        return { data: result, error: null };
+      }
+    }
+
+    let supabase;
+    let usingLocalDatabase = false;
+    try {
+      supabase = window.supabase?.createClient(supabaseUrl, supabaseAnonKey, {
+        realtime: { params: { eventsPerSecond: 10 } }
+      }) || new LocalDatabase();
+    } catch (error) {
+      supabase = new LocalDatabase();
+    }
+    usingLocalDatabase = supabase instanceof LocalDatabase;
 
     // ------------------ Navigation ------------------
     const navButtons = document.querySelectorAll("nav button");
@@ -785,7 +865,7 @@
         unit_price: parseFloat(fd.get("unit_price")),
         direction: fd.get("direction")
       };
-      const { error } = await supabase.from("logistics").insert(payload);
+      const { error } = await supabase.from("logistics_items").insert(payload);
       if (error) {
         logisticsMsg.textContent = "Fehler beim Speichern: " + error.message;
         return;
@@ -950,6 +1030,57 @@
       });
     }
 
+    function setConnectionStatus(message, isError = false) {
+      const status = document.getElementById("connection-status");
+      status.textContent = message;
+      status.style.color = isError ? "var(--danger)" : "var(--accent)";
+    }
+
+    function setupRealtime() {
+      if (usingLocalDatabase || !supabase.channel) return;
+      if (supabase.realtime?.setAuth) supabase.realtime.setAuth(supabaseAnonKey);
+      if (supabase.realtime?.connect) supabase.realtime.connect();
+
+      const subscriptions = [
+        ["citizens", loadCitizens],
+        ["companies", () => { loadCompanies(); loadAdminCompanyRequests(); }],
+        ["accounts", () => { loadAdminAccountRequests(); if (selectedCitizen) loadCitizenAccounts(selectedCitizen.citizen_id); }],
+        ["invoices", loadInvoices],
+        ["vehicles", () => { loadVehicles(); if (selectedCitizen) loadCitizenVehicles(selectedCitizen.citizen_id); }],
+        ["licenses", () => { if (selectedCitizen) loadCitizenLicenses(selectedCitizen.citizen_id); }],
+        ["logistics_items", loadCatalog]
+      ];
+
+      subscriptions.forEach(([table, reload]) => {
+        supabase
+          .channel(`gnadental-${table}`)
+          .on("postgres_changes", { event: "*", schema: "public", table }, reload)
+          .subscribe(status => {
+            if (status === "SUBSCRIBED") setConnectionStatus("Supabase verbunden / Realtime aktiv");
+            if (status === "CHANNEL_ERROR" || status === "TIMED_OUT") {
+              setConnectionStatus("Supabase erreichbar, Realtime nicht aktiv", true);
+            }
+          });
+      });
+    }
+
+    async function checkSupabaseConnection() {
+      if (usingLocalDatabase) {
+        setConnectionStatus("Lokaler Speicher aktiv", true);
+        return;
+      }
+
+      setConnectionStatus("Verbinde mit Supabase ...");
+      const { error } = await supabase.from("citizens").select("citizen_id").limit(1);
+      if (error) {
+        setConnectionStatus("Supabase-Fehler: " + error.message, true);
+        return;
+      }
+
+      setConnectionStatus("Supabase verbunden, Realtime wird gestartet");
+      setupRealtime();
+    }
+
     // ------------------ Initial Load ------------------
     loadCitizens();
     loadCompanies();
@@ -958,6 +1089,7 @@
     loadCatalog();
     loadAdminCompanyRequests();
     loadAdminAccountRequests();
+    checkSupabaseConnection();
   </script>
 </body>
 </html>
