@@ -23,6 +23,7 @@
         <button data-view="citizens">Bürger</button>
         <button data-view="companies">Unternehmen</button>
         <button data-view="bank">Banking</button>
+        <button data-view="mezzorik-bank">Mezzorik Banking</button>
         <button data-view="vehicles">Fahrzeuge</button>
         <button data-view="logistics">Mezzorik Logistik</button>
         <button data-view="catalog">Katalog</button>
@@ -123,6 +124,20 @@
       </div>
 
       <div class="card"><h2>Rechnungen</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Von</th><th>An</th><th>Betrag</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="invoice-rows"></tbody></table></div></div>
+    </section>
+
+    <section id="mezzorik-bank" class="view">
+      <div class="hero">
+        <div class="eyebrow">Mezzorik Logistik</div>
+        <h1>Mezzorik Banking</h1>
+        <p>Kontostand, Einnahmen, Rechnungen und der aktuelle Warenbestand des Logistikbetriebs.</p>
+      </div>
+      <div class="grid">
+        <div class="card"><div class="eyebrow">Aktueller Kontostand</div><div id="mezzorik-balance" class="metric">-</div><p id="mezzorik-account-label">Konto wird geladen ...</p></div>
+        <div class="card"><div class="eyebrow">Verkäufe</div><div id="mezzorik-sales-total" class="metric">0,00 €</div><p>Umsatz aus Katalogbestellungen</p></div>
+      </div>
+      <div class="card"><h2>Mezzorik Warenbestand</h2><div id="mezzorik-stock" class="tablewrap"></div></div>
+      <div class="card"><h2>Rechnungen und Bestellungen</h2><div id="mezzorik-invoices" class="tablewrap"></div></div>
     </section>
 
     <section id="vehicles" class="view">
@@ -422,12 +437,40 @@
       renderInvoices();
       renderVehicles();
       renderProducts();
+      renderMezzorikBank();
       renderLogisticsWarehouse();
       renderTransportStatus();
       renderAdmin();
       $('#citizen-count').textContent = state.citizens.length;
       $('#vehicle-count').textContent = state.vehicles.length;
       $('#order-count').textContent = state.orders.length;
+    }
+
+    function getMezzorikCompany() {
+      return state.companies.find(company => company.company_name.toLowerCase() === 'mezzorik logistik' && company.status === 'active') || null;
+    }
+
+    function getMezzorikAccount() {
+      const company = getMezzorikCompany();
+      return company ? state.accounts.find(account => String(account.company_id) === String(company.id) && account.status === 'active') || null : null;
+    }
+
+    function renderMezzorikBank() {
+      const account = getMezzorikAccount();
+      const company = getMezzorikCompany();
+      $('#mezzorik-balance').textContent = account ? money(account.balance) : '-';
+      $('#mezzorik-account-label').textContent = account ? `Konto ${account.id} · ${company.company_name}` : 'Aktives Mezzorik-Konto nicht gefunden.';
+
+      const stock = (state.products || []).filter(product => Number(product.quantity || 0) > 0).map(product => `<tr><td>${esc(product.item_name)}</td><td>${esc(product.quantity)}</td><td class="money">${money(product.unit_price)}</td><td>Mezzorik Katalog</td></tr>`);
+      $('#mezzorik-stock').innerHTML = stock.length ? `<table class="table"><thead><tr><th>Produkt</th><th>Menge</th><th>Preis</th><th>Quelle</th></tr></thead><tbody>${stock.join('')}</tbody></table>` : '<p class="empty">Kein Mezzorik-Bestand vorhanden.</p>';
+
+      const invoices = account ? state.invoices.filter(invoice => String(invoice.to_account_id) === String(account.id) || String(invoice.from_account_id) === String(account.id)) : [];
+      const sales = state.orders.filter(order => account && order.status === 'paid' && Array.isArray(order.items_json) && order.items_json.some(item => item.source === 'logistics'));
+      const salesTotal = sales.reduce((sum, order) => sum + Number(order.total_amount || 0), 0);
+      $('#mezzorik-sales-total').textContent = money(salesTotal);
+      const invoiceRows = invoices.map(invoice => `<tr><td>${esc(invoice.invoice_number || invoice.id)}</td><td>${esc(invoice.reason || 'Rechnung')}</td><td class="money">${money(invoice.amount)}</td><td>${esc(invoice.status)}</td></tr>`);
+      const orderRows = sales.map(order => `<tr><td>Bestellung ${esc(order.id)}</td><td>Katalogverkauf</td><td class="money">${money(order.total_amount)}</td><td>${esc(order.transport_status || 'abholung')}</td></tr>`);
+      $('#mezzorik-invoices').innerHTML = [...invoiceRows, ...orderRows].length ? `<table class="table"><thead><tr><th>Beleg</th><th>Grund</th><th>Betrag</th><th>Status</th></tr></thead><tbody>${[...invoiceRows, ...orderRows].join('')}</tbody></table>` : '<p class="empty">Keine Rechnungen oder Bestellungen vorhanden.</p>';
     }
 
     function renderLogisticsWarehouse() {

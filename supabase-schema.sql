@@ -265,6 +265,7 @@ as $$
 declare
   account_row public.accounts;
   order_row public.orders;
+  seller_account public.accounts;
   final_amount numeric := subtotal;
   fee numeric := 0;
 begin
@@ -284,6 +285,14 @@ begin
   if account_row.balance < final_amount then raise exception 'Guthaben reicht nicht aus'; end if;
 
   update public.accounts set balance = balance - final_amount where id = account_row.id;
+  select accounts.* into seller_account
+    from public.accounts
+    join public.companies on companies.id = accounts.company_id
+    where lower(companies.company_name) = 'mezzorik logistik' and accounts.type = 'unternehmen' and accounts.status = 'active'
+    limit 1
+    for update;
+  if not found then raise exception 'Mezzorik-Konto ist nicht aktiv'; end if;
+  update public.accounts set balance = balance + final_amount where id = seller_account.id;
   insert into public.orders(account_id, items_json, total_amount, status, delivery_method, transport_fee, transport_status)
     values (account_row.id, items_json, final_amount, 'paid', delivery_method, fee, case when delivery_method = 'transport' then 'offen' else 'nicht_erforderlich' end)
     returning * into order_row;
@@ -392,6 +401,16 @@ on conflict (citizen_id) do nothing;
 insert into public.companies(company_name, owner_citizen_id, sector, description, status)
 select 'Gnadental Agrar', 'CIT-0001', 'Landwirtschaft', 'Beispielbetrieb fuer den Start', 'active'
 where not exists (select 1 from public.companies where company_name = 'Gnadental Agrar');
+
+insert into public.companies(company_name, sector, description, status)
+select 'Mezzorik Logistik', 'Logistik', 'Zentraler Logistikbetrieb und Kataloganbieter', 'active'
+where not exists (select 1 from public.companies where lower(company_name) = 'mezzorik logistik');
+
+insert into public.accounts(type, company_id, balance, status)
+select 'unternehmen', companies.id, 0, 'active'
+from public.companies
+where lower(companies.company_name) = 'mezzorik logistik'
+  and not exists (select 1 from public.accounts where company_id = companies.id);
 
 insert into public.accounts(type, citizen_id, balance, status)
 select 'privat', 'CIT-0001', 10000, 'active'
