@@ -197,7 +197,7 @@
       <div class="card"><h2>Führerscheine verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Bürger</th><th>Klasse</th><th>Aktionen</th></tr></thead><tbody id="admin-license-list"></tbody></table></div></div>
       <div class="card"><h2>Logistikbuchungen verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Artikel</th><th>Menge</th><th>Richtung</th><th>Aktionen</th></tr></thead><tbody id="admin-logistics-list"></tbody></table></div></div>
       <div class="card"><h2>Katalog verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Artikel</th><th>Preis</th><th>Menge</th><th>Aktionen</th></tr></thead><tbody id="admin-product-list"></tbody></table></div></div>
-      <div class="card"><h2>Firmenlager verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>Unternehmen</th><th>Produkt</th><th>Menge</th><th>Preis</th><th>Aktionen</th></tr></thead><tbody id="admin-warehouse-list"></tbody></table></div></div>
+      <div class="card"><h2>Firmenlager verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>Unternehmen</th><th>Produkt</th><th>Menge</th><th>Preis</th><th>Katalog</th><th>Aktionen</th></tr></thead><tbody id="admin-warehouse-list"></tbody></table></div></div>
       <div class="card"><h2>Bestellungen verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Konto</th><th>Gesamt</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="admin-order-list"></tbody></table></div></div>
     </section>
   </main>
@@ -323,6 +323,7 @@
             unit_price: Number(item.unit_price || 0),
             quantity: Number(item.amount || item.quantity || 0),
             company_id: companyId,
+            is_public: item.is_public !== false,
             source: 'company'
           });
         });
@@ -452,6 +453,7 @@
           <div class="field"><label>Produkt</label><input name="product_name" required></div>
           <div class="field"><label>Menge</label><input name="amount" type="number" min="0" step="1" required></div>
           <div class="field"><label>Preis</label><input name="unit_price" type="number" min="0" step="0.01" required></div>
+          <div class="field"><label><input name="is_public" type="checkbox" checked> Im öffentlichen Katalog anbieten</label></div>
         </form>
         <div class="actions" style="margin-top:8px">
           <button class="btn" id="company-stock-save">Bestand erfassen</button>
@@ -480,6 +482,7 @@
       const product_name = String(f.get('product_name') || '').trim();
       const amount = Number(f.get('amount') || 0);
       const unit_price = Number(f.get('unit_price') || 0);
+      const is_public = f.get('is_public') === 'on';
 
       if (!product_name || amount <= 0) {
         message('#company-msg', 'Bitte Produkt, Menge und Preis eingeben.');
@@ -503,6 +506,7 @@
         product_name,
         amount: newAmount,
         unit_price,
+        is_public,
         updated_at: new Date().toISOString()
       };
 
@@ -537,7 +541,7 @@
 
     function renderProducts() {
       const term = ($('#catalog-search').value || '').toLowerCase();
-      const products = getCompanyCatalog().filter(p => String(p.item_name).toLowerCase().includes(term));
+      const products = getCompanyCatalog().filter(p => p.quantity > 0 && (p.source !== 'company' || p.is_public) && String(p.item_name).toLowerCase().includes(term));
       $('#products').innerHTML = products.length
         ? products.map(p => `<div class="product"><div><strong>${esc(p.item_name)}</strong><small>${esc(p.company_name || 'Gnadental Logistik')}</small></div><div><span class="money">${money(p.unit_price)}</span><button class="btn alt" data-add="${esc(p.id)}">In den Warenkorb</button></div></div>`).join('')
         : '<p class="empty">Keine Produkte gefunden.</p>';
@@ -576,7 +580,7 @@
       $('#admin-product-list').innerHTML = state.products.map(p => `<tr><td>${esc(p.id)}</td><td>${esc(p.item_name)}</td><td class="money">${money(p.unit_price)}</td><td>${esc(p.quantity)}</td><td><div class="actions"><button class="btn alt" data-edit-product="${esc(p.id)}">Bearbeiten</button><button class="btn warn" data-delete-product="${esc(p.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Keine Katalogartikel vorhanden.</td></tr>';
       const warehouseRows = Object.entries(state.companyWarehouse || {}).flatMap(([companyId, items]) => {
         const company = state.companies.find(c => String(c.id) === String(companyId));
-        return (items || []).map(item => `<tr><td>${esc(company ? company.company_name : companyId)}</td><td>${esc(item.product_name)}</td><td>${esc(item.amount || item.quantity || 0)}</td><td class="money">${money(item.unit_price)}</td><td><div class="actions"><button class="btn alt" data-edit-warehouse-company="${esc(companyId)}" data-edit-warehouse-product="${esc(item.product_name)}">Bearbeiten</button><button class="btn warn" data-delete-warehouse-company="${esc(companyId)}" data-delete-warehouse-product="${esc(item.product_name)}">Löschen</button></div></td></tr>`);
+        return (items || []).map(item => `<tr><td>${esc(company ? company.company_name : companyId)}</td><td>${esc(item.product_name)}</td><td>${esc(item.amount || item.quantity || 0)}</td><td class="money">${money(item.unit_price)}</td><td>${item.is_public === false ? 'Privat' : 'Öffentlich'}</td><td><div class="actions"><button class="btn alt" data-edit-warehouse-company="${esc(companyId)}" data-edit-warehouse-product="${esc(item.product_name)}">Bearbeiten</button><button class="btn warn" data-delete-warehouse-company="${esc(companyId)}" data-delete-warehouse-product="${esc(item.product_name)}">Löschen</button></div></td></tr>`);
       });
       $('#admin-warehouse-list').innerHTML = warehouseRows.join('') || '<tr><td colspan="5" class="empty">Keine Firmenlagerbestände vorhanden.</td></tr>';
       $('#admin-order-list').innerHTML = state.orders.map(o => `<tr><td>${esc(o.id)}</td><td>${esc(o.account_id)}</td><td class="money">${money(o.total_amount)}</td><td><span class="tag ${esc(o.status)}">${esc(o.status)}</span></td><td><div class="actions"><button class="btn alt" data-edit-order="${esc(o.id)}">Bearbeiten</button><button class="btn warn" data-delete-order="${esc(o.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Keine Bestellungen vorhanden.</td></tr>';
@@ -947,12 +951,14 @@
       if (amount === null) return;
       const unitPrice = prompt('Preis:', item.unit_price || 0);
       if (unitPrice === null) return;
+      const publicState = prompt('Öffentlich im Katalog anzeigen? (ja/nein):', item.is_public === false ? 'nein' : 'ja');
+      if (publicState === null) return;
       const numericAmount = Number(amount);
       const numericPrice = Number(unitPrice);
-      if (!Number.isInteger(numericAmount) || numericAmount < 0 || !Number.isFinite(numericPrice) || numericPrice < 0) {
+      if (!Number.isInteger(numericAmount) || numericAmount < 0 || !Number.isFinite(numericPrice) || numericPrice < 0 || !['ja', 'nein'].includes(publicState.toLowerCase())) {
         return alert('Bitte gültige Lagerdaten eingeben.');
       }
-      setCompanyWarehouse(companyId, items.map(entry => String(entry.product_name) === String(productName) ? { ...entry, amount: numericAmount, unit_price: numericPrice, updated_at: new Date().toISOString() } : entry));
+      setCompanyWarehouse(companyId, items.map(entry => String(entry.product_name) === String(productName) ? { ...entry, amount: numericAmount, unit_price: numericPrice, is_public: publicState.toLowerCase() === 'ja', updated_at: new Date().toISOString() } : entry));
       renderAll();
     }
 
