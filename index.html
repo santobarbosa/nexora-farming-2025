@@ -24,8 +24,9 @@
         <button data-view="companies">Unternehmen</button>
         <button data-view="bank">Banking</button>
         <button data-view="vehicles">Fahrzeuge</button>
-        <button data-view="logistics">Logistik</button>
+        <button data-view="logistics">Mezzorik Logistik</button>
         <button data-view="catalog">Katalog</button>
+        <button data-view="transport-status">Transportstatus</button>
         <button data-view="admin">Admin</button>
       </nav>
     </div>
@@ -144,7 +145,7 @@
 
     <section id="logistics" class="view">
       <div class="card">
-        <div class="eyebrow">Logistik Center</div>
+        <div class="eyebrow">Mezzorik Logistik</div>
         <h2>Wareneingang und -ausgang</h2>
         <form id="logistics-form">
           <div class="formgrid">
@@ -156,6 +157,27 @@
           <button class="btn">Logistik buchen</button>
         </form>
         <p id="logistics-msg" class="msg"></p>
+      </div>
+      <div class="grid">
+        <div class="card">
+          <div class="eyebrow">Mezzorik Logistik</div>
+          <h2>Transportauftrag anlegen</h2>
+          <form id="transport-form">
+            <div class="formgrid">
+              <div class="field"><label>Waren / Auftrag</label><input name="item_name" required maxlength="160"></div>
+              <div class="field"><label>Menge</label><input name="quantity" type="number" min="1" required></div>
+              <div class="field"><label>Abholort</label><input name="pickup_location" value="Mezzorik Logistik" required></div>
+              <div class="field"><label>Lieferort</label><input name="delivery_location" required></div>
+            </div>
+            <p><strong>Transportpauschale: 2.000,00 €</strong></p>
+            <button class="btn">Transportauftrag erstellen</button>
+          </form>
+          <p id="transport-msg" class="msg"></p>
+        </div>
+        <div class="card">
+          <h2>Firmen- und Katalogbestand</h2>
+          <div id="logistics-warehouse" class="tablewrap"></div>
+        </div>
       </div>
       <div class="card">
         <h2>Preisaktion</h2>
@@ -184,6 +206,15 @@
         <button class="btn" id="checkout">Jetzt bezahlen</button>
         <p id="cart-msg" class="msg"></p>
       </div>
+    </section>
+
+    <section id="transport-status" class="view">
+      <div class="hero">
+        <div class="eyebrow">Mezzorik Logistik</div>
+        <h1>Transportstatus</h1>
+        <p>Alle offenen und abgeschlossenen Transportaufträge zentral im Blick.</p>
+      </div>
+      <div class="card"><div class="tablewrap"><table class="table"><thead><tr><th>Auftrag</th><th>Waren</th><th>Abholung</th><th>Lieferort</th><th>Gebühr</th><th>Status</th></tr></thead><tbody id="transport-status-rows"></tbody></table></div></div>
     </section>
 
     <section id="admin" class="view">
@@ -228,6 +259,7 @@
       companyWarehouse: [],
       logistics: [],
       orders: [],
+      transportJobs: [],
       licenses: [],
       cart: [],
       selected: null,
@@ -325,7 +357,7 @@
     function getCompanyCatalog() {
       const catalog = [];
       (state.products || []).forEach(item => {
-        catalog.push({ id: item.id, item_name: item.item_name, company_name: 'Gnadental Logistik', unit_price: Number(item.unit_price || 0), quantity: Number(item.quantity || 0), source: 'logistics' });
+        catalog.push({ id: item.id, item_name: item.item_name, company_name: 'Mezzorik Logistik', unit_price: Number(item.unit_price || 0), quantity: Number(item.quantity || 0), source: 'logistics' });
       });
       (state.companyWarehouse || []).forEach(item => {
         const company = state.companies.find(c => String(c.id) === String(item.company_id));
@@ -352,7 +384,7 @@
 
     async function loadAll() {
       try {
-        [state.citizens, state.companies, state.accounts, state.invoices, state.vehicles, state.products, state.companyWarehouse, state.logistics, state.orders, state.licenses] = await Promise.all([
+        [state.citizens, state.companies, state.accounts, state.invoices, state.vehicles, state.products, state.companyWarehouse, state.logistics, state.orders, state.transportJobs, state.licenses] = await Promise.all([
           read('citizens', 'citizen_id'),
           read('companies'),
           read('accounts'),
@@ -362,6 +394,7 @@
           read('company_warehouse', 'updated_at'),
           read('logistics'),
           read('orders'),
+          read('transport_jobs', 'updated_at'),
           read('licenses')
         ]);
         if (await migrateLegacyCompanyWarehouse()) state.companyWarehouse = await read('company_warehouse', 'updated_at');
@@ -388,9 +421,29 @@
       renderInvoices();
       renderVehicles();
       renderProducts();
+      renderLogisticsWarehouse();
+      renderTransportStatus();
       renderAdmin();
       $('#citizen-count').textContent = state.citizens.length;
       $('#vehicle-count').textContent = state.vehicles.length;
+      $('#order-count').textContent = state.orders.length;
+    }
+
+    function renderLogisticsWarehouse() {
+      const centralRows = (state.products || []).filter(item => Number(item.quantity || 0) > 0).map(item => `<tr><td>Mezzorik Logistik</td><td>${esc(item.item_name)}</td><td>${esc(item.quantity)}</td><td class="money">${money(item.unit_price)}</td><td>Katalog</td></tr>`);
+      const companyRows = (state.companyWarehouse || []).filter(item => Number(item.amount || 0) > 0).map(item => {
+        const company = state.companies.find(c => String(c.id) === String(item.company_id));
+        return `<tr><td>${esc(company ? company.company_name : item.company_id)}</td><td>${esc(item.product_name)}</td><td>${esc(item.amount)}</td><td class="money">${money(item.unit_price)}</td><td>${item.is_public === false ? 'Privat' : 'Katalog'}</td></tr>`;
+      });
+      const rows = [...centralRows, ...companyRows];
+      $('#logistics-warehouse').innerHTML = rows.length
+        ? `<table class="table"><thead><tr><th>Unternehmen</th><th>Produkt</th><th>Menge</th><th>Preis</th><th>Verfügbarkeit</th></tr></thead><tbody>${rows.join('')}</tbody></table>`
+        : '<p class="empty">Keine Firmenlagerbestände vorhanden.</p>';
+    }
+
+    function renderTransportStatus() {
+      const rows = (state.transportJobs || []).map(job => `<tr><td><strong>${esc(job.id)}</strong></td><td>${esc(job.item_name)} (${esc(job.quantity)})</td><td>${esc(job.pickup_location)}</td><td>${esc(job.delivery_location)}</td><td class="money">${money(job.transport_fee)}</td><td><span class="tag ${esc(job.status)}">${esc(job.status)}</span></td></tr>`);
+      $('#transport-status-rows').innerHTML = rows.join('') || '<tr><td colspan="6" class="empty">Keine Transportaufträge vorhanden.</td></tr>';
     }
 
     function renderCitizens() {
@@ -551,7 +604,7 @@
       const term = ($('#catalog-search').value || '').toLowerCase();
       const products = getCompanyCatalog().filter(p => p.quantity > 0 && (p.source !== 'company' || p.is_public) && String(p.item_name).toLowerCase().includes(term));
       $('#products').innerHTML = products.length
-        ? products.map(p => `<div class="product"><div><strong>${esc(p.item_name)}</strong><small>${esc(p.company_name || 'Gnadental Logistik')}</small></div><div><span class="money">${money(p.unit_price)}</span><button class="btn alt" data-add="${esc(p.id)}">In den Warenkorb</button></div></div>`).join('')
+        ? products.map(p => `<div class="product"><div><strong>${esc(p.item_name)}</strong><small>${esc(p.company_name || 'Mezzorik Logistik')}</small></div><div><span class="money">${money(p.unit_price)}</span><button class="btn alt" data-add="${esc(p.id)}">In den Warenkorb</button></div></div>`).join('')
         : '<p class="empty">Keine Produkte gefunden.</p>';
 
       $$('[data-add]').forEach(button => button.addEventListener('click', () => {
@@ -736,6 +789,29 @@
       else {
         message('#logistics-msg', 'Preis aktualisiert.', true);
         loadAll();
+      }
+    });
+
+    $('#transport-form').addEventListener('submit', async e => {
+      e.preventDefault();
+      const f = new FormData(e.target);
+      const payload = {
+        item_name: String(f.get('item_name') || '').trim(),
+        quantity: Number(f.get('quantity') || 0),
+        pickup_location: String(f.get('pickup_location') || '').trim(),
+        delivery_location: String(f.get('delivery_location') || '').trim(),
+        transport_fee: 2000,
+        status: 'offen'
+      };
+      try {
+        const result = await db.from('transport_jobs').insert(payload);
+        if (result.error) throw result.error;
+        message('#transport-msg', 'Transportauftrag wurde erstellt.', true);
+        e.target.reset();
+        e.target.elements.pickup_location.value = 'Mezzorik Logistik';
+        await loadAll();
+      } catch (err) {
+        message('#transport-msg', 'Transportauftrag konnte nicht erstellt werden: ' + err.message);
       }
     });
 
@@ -1021,16 +1097,25 @@
       const account = state.accounts.find(a => (a.citizen_id === holder || a.company_id === holder) && a.status === 'active');
       if (!account) return message('#cart-msg', 'Kein aktives Konto gefunden.');
 
+      const deliveryChoice = prompt('Lieferart wählen: 1 = Abholung, 2 = Transportauftrag (+2.000,00 €)', '1');
+      if (!deliveryChoice || !['1', '2'].includes(deliveryChoice)) return message('#cart-msg', 'Bitte 1 für Abholung oder 2 für Transport wählen.');
+      const deliveryMethod = deliveryChoice === '2' ? 'transport' : 'abholung';
+      const deliveryLocation = deliveryMethod === 'transport' ? prompt('Lieferort für den Transportauftrag:') : null;
+      if (deliveryMethod === 'transport' && !deliveryLocation?.trim()) return message('#cart-msg', 'Für den Transportauftrag wird ein Lieferort benötigt.');
+      const subtotal = state.cart.reduce((sum, p) => sum + Number(p.unit_price), 0);
+      const total = subtotal + (deliveryMethod === 'transport' ? 2000 : 0);
+
       try {
-        await rpc('create_order', { account_id: account.id, items_json: JSON.stringify(state.cart), total_amount: state.cart.reduce((sum, p) => sum + Number(p.unit_price), 0) }, '#cart-msg');
+        await rpc('create_order_with_delivery', { account_id: account.id, items_json: state.cart, subtotal, delivery_method: deliveryMethod, delivery_location: deliveryLocation?.trim() || null }, '#cart-msg');
         state.cart = [];
         renderCart();
+        message('#cart-msg', `Bestellung bezahlt: ${money(total)}${deliveryMethod === 'transport' ? ' inklusive Transportauftrag.' : '.'}`, true);
       } catch (err) {
         message('#cart-msg', 'Bestellung fehlgeschlagen: ' + err.message);
       }
     });
 
-    const tables = ['citizens', 'companies', 'accounts', 'invoices', 'vehicles', 'licenses', 'logistics_items', 'company_warehouse', 'orders'];
+    const tables = ['citizens', 'companies', 'accounts', 'invoices', 'vehicles', 'licenses', 'logistics_items', 'company_warehouse', 'orders', 'transport_jobs'];
     tables.forEach(table => db.channel('gnadental-' + table).on('postgres_changes', { event: '*', schema: 'public', table }, () => loadAll()).subscribe(status => {
       if (status === 'SUBSCRIBED') setConnection('Supabase verbunden · Realtime aktiv');
     }));
