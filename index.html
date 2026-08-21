@@ -225,12 +225,12 @@
       invoices: [],
       vehicles: [],
       products: [],
+      companyWarehouse: [],
       logistics: [],
       orders: [],
       licenses: [],
       cart: [],
       selected: null,
-      companyWarehouse: storage.get('gnadental_company_warehouse', {}),
       accountMovements: storage.get('gnadental_account_movements', [])
     };
 
@@ -256,10 +256,8 @@
 
     function id(prefix) { return prefix + '-' + String(Math.floor(Math.random() * 10000)).padStart(4, '0'); }
 
-    function getCompanyWarehouse(companyId) { return state.companyWarehouse[String(companyId)] || []; }
-    function setCompanyWarehouse(companyId, items) {
-      state.companyWarehouse[String(companyId)] = items;
-      storage.set('gnadental_company_warehouse', state.companyWarehouse);
+    function getCompanyWarehouse(companyId) {
+      return state.companyWarehouse.filter(item => String(item.company_id) === String(companyId));
     }
 
     function saveAccountMovement(entry) {
@@ -267,6 +265,23 @@
       list.unshift(entry);
       state.accountMovements = list.slice(0, 100);
       storage.set('gnadental_account_movements', state.accountMovements);
+    }
+
+    async function migrateLegacyCompanyWarehouse() {
+      const legacy = storage.get('gnadental_company_warehouse', {});
+      const rows = Object.entries(legacy || {}).flatMap(([companyId, items]) => (items || []).map(item => ({
+        company_id: companyId,
+        product_name: item.product_name,
+        amount: Number(item.amount || item.quantity || 0),
+        unit_price: Number(item.unit_price || 0),
+        is_public: item.is_public !== false
+      })).filter(item => item.product_name && item.amount >= 0));
+      if (!rows.length) return false;
+
+      const result = await db.from('company_warehouse').upsert(rows, { onConflict: 'company_id,product_name' });
+      if (result.error) throw result.error;
+      localStorage.removeItem('gnadental_company_warehouse');
+      return true;
     }
 
     function getEntityList(type) {
@@ -312,21 +327,19 @@
       (state.products || []).forEach(item => {
         catalog.push({ id: item.id, item_name: item.item_name, company_name: 'Gnadental Logistik', unit_price: Number(item.unit_price || 0), quantity: Number(item.quantity || 0), source: 'logistics' });
       });
-      Object.entries(state.companyWarehouse || {}).forEach(([companyId, items]) => {
-        const company = state.companies.find(c => String(c.id) === String(companyId));
-        (items || []).forEach(item => {
+      (state.companyWarehouse || []).forEach(item => {
+        const company = state.companies.find(c => String(c.id) === String(item.company_id));
           if (!item || !item.product_name) return;
           catalog.push({
-            id: `company-${companyId}-${item.product_name}`,
+            id: item.id,
             item_name: item.product_name,
             company_name: company ? company.company_name : 'Unternehmen',
             unit_price: Number(item.unit_price || 0),
-            quantity: Number(item.amount || item.quantity || 0),
-            company_id: companyId,
+            quantity: Number(item.amount || 0),
+            company_id: item.company_id,
             is_public: item.is_public !== false,
             source: 'company'
           });
-        });
       });
       return catalog;
     }
@@ -339,18 +352,19 @@
 
     async function loadAll() {
       try {
-        [state.citizens, state.companies, state.accounts, state.invoices, state.vehicles, state.products, state.logistics, state.orders, state.licenses] = await Promise.all([
+        [state.citizens, state.companies, state.accounts, state.invoices, state.vehicles, state.products, state.companyWarehouse, state.logistics, state.orders, state.licenses] = await Promise.all([
           read('citizens', 'citizen_id'),
           read('companies'),
           read('accounts'),
           read('invoices'),
           read('vehicles'),
           read('logistics_items'),
+          read('company_warehouse', 'updated_at'),
           read('logistics'),
           read('orders'),
           read('licenses')
         ]);
-        state.companyWarehouse = storage.get('gnadental_company_warehouse', {});
+        if (await migrateLegacyCompanyWarehouse()) state.companyWarehouse = await read('company_warehouse', 'updated_at');
         renderAll();
         updateEntityDropdowns();
         $('#last-sync').textContent = new Date().toLocaleTimeString('de-DE');
@@ -501,20 +515,14 @@
         newAmount = amount;
       }
 
-      const nextItem = {
-        id: existing ? existing.id : `stock-${Date.now()}`,
-        product_name,
-        amount: newAmount,
-        unit_price,
-        is_public,
-        updated_at: new Date().toISOString()
-      };
-
-      const updated = existing ? items.map(item => String(item.product_name).toLowerCase() === product_name.toLowerCase() ? nextItem : item) : [...items, nextItem];
-      setCompanyWarehouse(companyId, updated);
-      renderAll();
-      openCompany(companyId);
-      message('#company-msg', `Lagerbestand von ${product_name} aktualisiert.`, true);
+      db.from('company_warehouse').upsert({ company_id: companyId, product_name, amount: newAmount, unit_price, is_public }, { onConflict: 'company_id,product_name' }).then(result => {
+        if (result.error) {
+          message('#company-msg', 'Lagerbestand konnte nicht gespeichert werden: ' + result.error.message);
+          return;
+        }
+        loadAll();
+        message('#company-msg', `Lagerbestand von ${product_name} aktualisiert.`, true);
+      });
     }
 
     function renderInvoices() {
@@ -578,9 +586,9 @@
       $('#admin-license-list').innerHTML = state.licenses.map(l => `<tr><td>${esc(l.id)}</td><td>${esc(l.citizen_id)}</td><td>${esc(l.license_class)}</td><td><div class="actions"><button class="btn alt" data-edit-license="${esc(l.id)}">Bearbeiten</button><button class="btn warn" data-delete-license="${esc(l.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="4" class="empty">Keine Führerscheine vorhanden.</td></tr>';
       $('#admin-logistics-list').innerHTML = state.logistics.map(l => `<tr><td>${esc(l.id)}</td><td>${esc(l.item_name)}</td><td>${esc(l.quantity)}</td><td>${esc(l.direction)}</td><td><div class="actions"><button class="btn alt" data-edit-logistics="${esc(l.id)}">Bearbeiten</button><button class="btn warn" data-delete-logistics="${esc(l.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Keine Logistikbuchungen vorhanden.</td></tr>';
       $('#admin-product-list').innerHTML = state.products.map(p => `<tr><td>${esc(p.id)}</td><td>${esc(p.item_name)}</td><td class="money">${money(p.unit_price)}</td><td>${esc(p.quantity)}</td><td><div class="actions"><button class="btn alt" data-edit-product="${esc(p.id)}">Bearbeiten</button><button class="btn warn" data-delete-product="${esc(p.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Keine Katalogartikel vorhanden.</td></tr>';
-      const warehouseRows = Object.entries(state.companyWarehouse || {}).flatMap(([companyId, items]) => {
-        const company = state.companies.find(c => String(c.id) === String(companyId));
-        return (items || []).map(item => `<tr><td>${esc(company ? company.company_name : companyId)}</td><td>${esc(item.product_name)}</td><td>${esc(item.amount || item.quantity || 0)}</td><td class="money">${money(item.unit_price)}</td><td>${item.is_public === false ? 'Privat' : 'Öffentlich'}</td><td><div class="actions"><button class="btn alt" data-edit-warehouse-company="${esc(companyId)}" data-edit-warehouse-product="${esc(item.product_name)}">Bearbeiten</button><button class="btn warn" data-delete-warehouse-company="${esc(companyId)}" data-delete-warehouse-product="${esc(item.product_name)}">Löschen</button></div></td></tr>`);
+      const warehouseRows = (state.companyWarehouse || []).map(item => {
+        const company = state.companies.find(c => String(c.id) === String(item.company_id));
+        return `<tr><td>${esc(company ? company.company_name : item.company_id)}</td><td>${esc(item.product_name)}</td><td>${esc(item.amount || 0)}</td><td class="money">${money(item.unit_price)}</td><td>${item.is_public === false ? 'Privat' : 'Öffentlich'}</td><td><div class="actions"><button class="btn alt" data-edit-warehouse-id="${esc(item.id)}">Bearbeiten</button><button class="btn warn" data-delete-warehouse-id="${esc(item.id)}">Löschen</button></div></td></tr>`;
       });
       $('#admin-warehouse-list').innerHTML = warehouseRows.join('') || '<tr><td colspan="5" class="empty">Keine Firmenlagerbestände vorhanden.</td></tr>';
       $('#admin-order-list').innerHTML = state.orders.map(o => `<tr><td>${esc(o.id)}</td><td>${esc(o.account_id)}</td><td class="money">${money(o.total_amount)}</td><td><span class="tag ${esc(o.status)}">${esc(o.status)}</span></td><td><div class="actions"><button class="btn alt" data-edit-order="${esc(o.id)}">Bearbeiten</button><button class="btn warn" data-delete-order="${esc(o.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Keine Bestellungen vorhanden.</td></tr>';
@@ -603,8 +611,8 @@
       $$('[data-delete-logistics]').forEach(button => button.addEventListener('click', () => deleteRecord('logistics', 'id', button.dataset.deleteLogistics, 'Logistikbuchung')));
       $$('[data-edit-product]').forEach(button => button.addEventListener('click', () => editProduct(button.dataset.editProduct)));
       $$('[data-delete-product]').forEach(button => button.addEventListener('click', () => deleteRecord('logistics_items', 'id', button.dataset.deleteProduct, 'Katalogartikel')));
-      $$('[data-edit-warehouse-company]').forEach(button => button.addEventListener('click', () => editWarehouseStock(button.dataset.editWarehouseCompany, button.dataset.editWarehouseProduct)));
-      $$('[data-delete-warehouse-company]').forEach(button => button.addEventListener('click', () => deleteWarehouseStock(button.dataset.deleteWarehouseCompany, button.dataset.deleteWarehouseProduct)));
+      $$('[data-edit-warehouse-id]').forEach(button => button.addEventListener('click', () => editWarehouseStock(button.dataset.editWarehouseId)));
+      $$('[data-delete-warehouse-id]').forEach(button => button.addEventListener('click', () => deleteWarehouseStock(button.dataset.deleteWarehouseId)));
       $$('[data-edit-order]').forEach(button => button.addEventListener('click', () => editOrder(button.dataset.editOrder)));
       $$('[data-delete-order]').forEach(button => button.addEventListener('click', () => deleteRecord('orders', 'id', button.dataset.deleteOrder, 'Bestellung')));
     }
@@ -943,9 +951,8 @@
       await updateAdminRecord('orders', 'id', orderId, { total_amount: numericAmount, status }, 'Bestellung');
     }
 
-    function editWarehouseStock(companyId, productName) {
-      const items = getCompanyWarehouse(companyId);
-      const item = items.find(entry => String(entry.product_name) === String(productName));
+    function editWarehouseStock(warehouseId) {
+      const item = state.companyWarehouse.find(entry => String(entry.id) === String(warehouseId));
       if (!item) return;
       const amount = prompt('Menge:', item.amount || item.quantity || 0);
       if (amount === null) return;
@@ -958,14 +965,18 @@
       if (!Number.isInteger(numericAmount) || numericAmount < 0 || !Number.isFinite(numericPrice) || numericPrice < 0 || !['ja', 'nein'].includes(publicState.toLowerCase())) {
         return alert('Bitte gültige Lagerdaten eingeben.');
       }
-      setCompanyWarehouse(companyId, items.map(entry => String(entry.product_name) === String(productName) ? { ...entry, amount: numericAmount, unit_price: numericPrice, is_public: publicState.toLowerCase() === 'ja', updated_at: new Date().toISOString() } : entry));
-      renderAll();
+      db.from('company_warehouse').update({ amount: numericAmount, unit_price: numericPrice, is_public: publicState.toLowerCase() === 'ja' }).eq('id', warehouseId).then(result => {
+        if (result.error) return alert('Lagerbestand konnte nicht geändert werden: ' + result.error.message);
+        loadAll();
+      });
     }
 
-    function deleteWarehouseStock(companyId, productName) {
+    function deleteWarehouseStock(warehouseId) {
       if (!confirm('Lagerbestand wirklich löschen?')) return;
-      setCompanyWarehouse(companyId, getCompanyWarehouse(companyId).filter(entry => String(entry.product_name) !== String(productName)));
-      renderAll();
+      db.from('company_warehouse').delete().eq('id', warehouseId).then(result => {
+        if (result.error) return alert('Lagerbestand konnte nicht gelöscht werden: ' + result.error.message);
+        loadAll();
+      });
     }
 
     async function deleteRecord(table, field, value, label) {
@@ -1019,7 +1030,7 @@
       }
     });
 
-    const tables = ['citizens', 'companies', 'accounts', 'invoices', 'vehicles', 'licenses', 'logistics_items', 'orders'];
+    const tables = ['citizens', 'companies', 'accounts', 'invoices', 'vehicles', 'licenses', 'logistics_items', 'company_warehouse', 'orders'];
     tables.forEach(table => db.channel('gnadental-' + table).on('postgres_changes', { event: '*', schema: 'public', table }, () => loadAll()).subscribe(status => {
       if (status === 'SUBSCRIBED') setConnection('Supabase verbunden · Realtime aktiv');
     }));
