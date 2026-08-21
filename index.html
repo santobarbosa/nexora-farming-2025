@@ -191,6 +191,14 @@
       <div class="grid"><div class="card"><h2>Unternehmensanträge</h2><div id="admin-companies"></div></div><div class="card"><h2>Kontoeröffnungen</h2><div id="admin-accounts"></div></div></div>
       <div class="card"><h2>Bürger verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>Bürger-ID</th><th>Name</th><th>Geburtsdatum</th><th>Aktionen</th></tr></thead><tbody id="admin-citizens"></tbody></table></div></div>
       <div class="card"><h2>Alle Unternehmen verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>Unternehmens-ID</th><th>Name</th><th>Bereich</th><th>Inhaber</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="admin-company-list"></tbody></table></div></div>
+      <div class="card"><h2>Konten verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Typ</th><th>Inhaber</th><th>Kontostand</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="admin-account-list"></tbody></table></div></div>
+      <div class="card"><h2>Rechnungen verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>Rechnung</th><th>Betrag</th><th>Grund</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="admin-invoice-list"></tbody></table></div></div>
+      <div class="card"><h2>Fahrzeuge verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Name</th><th>Klasse</th><th>Preis</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="admin-vehicle-list"></tbody></table></div></div>
+      <div class="card"><h2>Führerscheine verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Bürger</th><th>Klasse</th><th>Aktionen</th></tr></thead><tbody id="admin-license-list"></tbody></table></div></div>
+      <div class="card"><h2>Logistikbuchungen verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Artikel</th><th>Menge</th><th>Richtung</th><th>Aktionen</th></tr></thead><tbody id="admin-logistics-list"></tbody></table></div></div>
+      <div class="card"><h2>Katalog verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Artikel</th><th>Preis</th><th>Menge</th><th>Aktionen</th></tr></thead><tbody id="admin-product-list"></tbody></table></div></div>
+      <div class="card"><h2>Firmenlager verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>Unternehmen</th><th>Produkt</th><th>Menge</th><th>Preis</th><th>Aktionen</th></tr></thead><tbody id="admin-warehouse-list"></tbody></table></div></div>
+      <div class="card"><h2>Bestellungen verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Konto</th><th>Gesamt</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="admin-order-list"></tbody></table></div></div>
     </section>
   </main>
 
@@ -217,6 +225,9 @@
       invoices: [],
       vehicles: [],
       products: [],
+      logistics: [],
+      orders: [],
+      licenses: [],
       cart: [],
       selected: null,
       companyWarehouse: storage.get('gnadental_company_warehouse', {}),
@@ -327,13 +338,16 @@
 
     async function loadAll() {
       try {
-        [state.citizens, state.companies, state.accounts, state.invoices, state.vehicles, state.products] = await Promise.all([
+        [state.citizens, state.companies, state.accounts, state.invoices, state.vehicles, state.products, state.logistics, state.orders, state.licenses] = await Promise.all([
           read('citizens', 'citizen_id'),
           read('companies'),
           read('accounts'),
           read('invoices'),
           read('vehicles'),
-          read('logistics_items')
+          read('logistics_items'),
+          read('logistics'),
+          read('orders'),
+          read('licenses')
         ]);
         state.companyWarehouse = storage.get('gnadental_company_warehouse', {});
         renderAll();
@@ -554,6 +568,18 @@
       $('#admin-accounts').innerHTML = state.accounts.filter(a => a.status === 'pending').map(a => `<p>Konto ${esc(a.id)} (${esc(a.type)}) <input data-capital="${esc(a.id)}" type="number" value="0" step="0.01" style="width:100px;padding:7px"><button class="btn" data-approve-account="${esc(a.id)}">Aktivieren</button></p>`).join('') || '<p class="empty">Keine offenen Kontoanträge.</p>';
       $('#admin-citizens').innerHTML = state.citizens.map(c => `<tr><td>${esc(c.citizen_id)}</td><td>${esc(c.first_name)} ${esc(c.last_name)}</td><td>${esc(c.birthdate)}</td><td><div class="actions"><button class="btn alt" data-edit-citizen="${esc(c.citizen_id)}">Bearbeiten</button><button class="btn warn" data-delete-citizen="${esc(c.citizen_id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="4" class="empty">Keine Bürger vorhanden.</td></tr>';
       $('#admin-company-list').innerHTML = state.companies.map(c => `<tr><td><strong>${esc(c.id)}</strong></td><td>${esc(c.company_name)}</td><td>${esc(c.sector)}</td><td>${esc(c.owner_citizen_id || '-')}</td><td><span class="tag ${esc(c.status)}">${esc(c.status)}</span></td><td><div class="actions"><button class="btn alt" data-edit-company="${esc(c.id)}">Bearbeiten</button><button class="btn warn" data-delete-company="${esc(c.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="6" class="empty">Keine Unternehmen vorhanden.</td></tr>';
+      $('#admin-account-list').innerHTML = state.accounts.map(a => `<tr><td>${esc(a.id)}</td><td>${esc(a.type)}</td><td>${esc(a.citizen_id || a.company_id || '-')}</td><td class="money">${money(a.balance)}</td><td><span class="tag ${esc(a.status)}">${esc(a.status)}</span></td><td><div class="actions"><button class="btn alt" data-edit-account="${esc(a.id)}">Bearbeiten</button><button class="btn warn" data-delete-account="${esc(a.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="6" class="empty">Keine Konten vorhanden.</td></tr>';
+      $('#admin-invoice-list').innerHTML = state.invoices.map(i => `<tr><td>${esc(i.invoice_number || i.id)}</td><td class="money">${money(i.amount)}</td><td>${esc(i.reason || '-')}</td><td><span class="tag ${esc(i.status)}">${esc(i.status)}</span></td><td><div class="actions"><button class="btn alt" data-edit-invoice="${esc(i.id)}">Bearbeiten</button><button class="btn warn" data-delete-invoice="${esc(i.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Keine Rechnungen vorhanden.</td></tr>';
+      $('#admin-vehicle-list').innerHTML = state.vehicles.map(v => `<tr><td>${esc(v.vehicle_id)}</td><td>${esc(v.name)}</td><td>${esc(v.vehicle_class)}</td><td class="money">${money(v.price)}</td><td><span class="tag ${esc(v.status)}">${esc(v.status)}</span></td><td><div class="actions"><button class="btn alt" data-edit-vehicle="${esc(v.vehicle_id)}">Bearbeiten</button><button class="btn warn" data-delete-vehicle="${esc(v.vehicle_id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="6" class="empty">Keine Fahrzeuge vorhanden.</td></tr>';
+      $('#admin-license-list').innerHTML = state.licenses.map(l => `<tr><td>${esc(l.id)}</td><td>${esc(l.citizen_id)}</td><td>${esc(l.license_class)}</td><td><div class="actions"><button class="btn alt" data-edit-license="${esc(l.id)}">Bearbeiten</button><button class="btn warn" data-delete-license="${esc(l.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="4" class="empty">Keine Führerscheine vorhanden.</td></tr>';
+      $('#admin-logistics-list').innerHTML = state.logistics.map(l => `<tr><td>${esc(l.id)}</td><td>${esc(l.item_name)}</td><td>${esc(l.quantity)}</td><td>${esc(l.direction)}</td><td><div class="actions"><button class="btn alt" data-edit-logistics="${esc(l.id)}">Bearbeiten</button><button class="btn warn" data-delete-logistics="${esc(l.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Keine Logistikbuchungen vorhanden.</td></tr>';
+      $('#admin-product-list').innerHTML = state.products.map(p => `<tr><td>${esc(p.id)}</td><td>${esc(p.item_name)}</td><td class="money">${money(p.unit_price)}</td><td>${esc(p.quantity)}</td><td><div class="actions"><button class="btn alt" data-edit-product="${esc(p.id)}">Bearbeiten</button><button class="btn warn" data-delete-product="${esc(p.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Keine Katalogartikel vorhanden.</td></tr>';
+      const warehouseRows = Object.entries(state.companyWarehouse || {}).flatMap(([companyId, items]) => {
+        const company = state.companies.find(c => String(c.id) === String(companyId));
+        return (items || []).map(item => `<tr><td>${esc(company ? company.company_name : companyId)}</td><td>${esc(item.product_name)}</td><td>${esc(item.amount || item.quantity || 0)}</td><td class="money">${money(item.unit_price)}</td><td><div class="actions"><button class="btn alt" data-edit-warehouse-company="${esc(companyId)}" data-edit-warehouse-product="${esc(item.product_name)}">Bearbeiten</button><button class="btn warn" data-delete-warehouse-company="${esc(companyId)}" data-delete-warehouse-product="${esc(item.product_name)}">Löschen</button></div></td></tr>`);
+      });
+      $('#admin-warehouse-list').innerHTML = warehouseRows.join('') || '<tr><td colspan="5" class="empty">Keine Firmenlagerbestände vorhanden.</td></tr>';
+      $('#admin-order-list').innerHTML = state.orders.map(o => `<tr><td>${esc(o.id)}</td><td>${esc(o.account_id)}</td><td class="money">${money(o.total_amount)}</td><td><span class="tag ${esc(o.status)}">${esc(o.status)}</span></td><td><div class="actions"><button class="btn alt" data-edit-order="${esc(o.id)}">Bearbeiten</button><button class="btn warn" data-delete-order="${esc(o.id)}">Löschen</button></div></td></tr>`).join('') || '<tr><td colspan="5" class="empty">Keine Bestellungen vorhanden.</td></tr>';
 
       $$('[data-approve-company]').forEach(button => button.addEventListener('click', () => approveCompany(button.dataset.approveCompany)));
       $$('[data-approve-account]').forEach(button => button.addEventListener('click', () => approveAccount(button.dataset.approveAccount)));
@@ -561,6 +587,22 @@
       $$('[data-delete-citizen]').forEach(button => button.addEventListener('click', () => deleteRecord('citizens', 'citizen_id', button.dataset.deleteCitizen, 'Bürger')));
       $$('[data-edit-company]').forEach(button => button.addEventListener('click', () => editCompany(button.dataset.editCompany)));
       $$('[data-delete-company]').forEach(button => button.addEventListener('click', () => deleteRecord('companies', 'id', button.dataset.deleteCompany, 'Unternehmen')));
+      $$('[data-edit-account]').forEach(button => button.addEventListener('click', () => editAccount(button.dataset.editAccount)));
+      $$('[data-delete-account]').forEach(button => button.addEventListener('click', () => deleteRecord('accounts', 'id', button.dataset.deleteAccount, 'Konto')));
+      $$('[data-edit-invoice]').forEach(button => button.addEventListener('click', () => editInvoice(button.dataset.editInvoice)));
+      $$('[data-delete-invoice]').forEach(button => button.addEventListener('click', () => deleteRecord('invoices', 'id', button.dataset.deleteInvoice, 'Rechnung')));
+      $$('[data-edit-vehicle]').forEach(button => button.addEventListener('click', () => editVehicle(button.dataset.editVehicle)));
+      $$('[data-delete-vehicle]').forEach(button => button.addEventListener('click', () => deleteRecord('vehicles', 'vehicle_id', button.dataset.deleteVehicle, 'Fahrzeug')));
+      $$('[data-edit-license]').forEach(button => button.addEventListener('click', () => editLicense(button.dataset.editLicense)));
+      $$('[data-delete-license]').forEach(button => button.addEventListener('click', () => deleteRecord('licenses', 'id', button.dataset.deleteLicense, 'Führerschein')));
+      $$('[data-edit-logistics]').forEach(button => button.addEventListener('click', () => editLogistics(button.dataset.editLogistics)));
+      $$('[data-delete-logistics]').forEach(button => button.addEventListener('click', () => deleteRecord('logistics', 'id', button.dataset.deleteLogistics, 'Logistikbuchung')));
+      $$('[data-edit-product]').forEach(button => button.addEventListener('click', () => editProduct(button.dataset.editProduct)));
+      $$('[data-delete-product]').forEach(button => button.addEventListener('click', () => deleteRecord('logistics_items', 'id', button.dataset.deleteProduct, 'Katalogartikel')));
+      $$('[data-edit-warehouse-company]').forEach(button => button.addEventListener('click', () => editWarehouseStock(button.dataset.editWarehouseCompany, button.dataset.editWarehouseProduct)));
+      $$('[data-delete-warehouse-company]').forEach(button => button.addEventListener('click', () => deleteWarehouseStock(button.dataset.deleteWarehouseCompany, button.dataset.deleteWarehouseProduct)));
+      $$('[data-edit-order]').forEach(button => button.addEventListener('click', () => editOrder(button.dataset.editOrder)));
+      $$('[data-delete-order]').forEach(button => button.addEventListener('click', () => deleteRecord('orders', 'id', button.dataset.deleteOrder, 'Bestellung')));
     }
 
     async function insert(table, payload, msg) {
@@ -781,6 +823,145 @@
       else loadAll();
     }
 
+    async function updateAdminRecord(table, field, value, payload, label) {
+      const result = await db.from(table).update(payload).eq(field, value);
+      if (result.error) {
+        alert(`${label} konnte nicht geändert werden: ${result.error.message}`);
+        return;
+      }
+      await loadAll();
+    }
+
+    async function editAccount(accountId) {
+      const account = state.accounts.find(item => String(item.id) === String(accountId));
+      if (!account) return;
+      const balance = prompt('Kontostand:', account.balance);
+      if (balance === null) return;
+      const status = prompt('Status (pending, active oder blocked):', account.status);
+      if (status === null) return;
+      const numericBalance = Number(balance);
+      if (!Number.isFinite(numericBalance) || numericBalance < 0 || !['pending', 'active', 'blocked'].includes(status)) {
+        return alert('Bitte gültigen Kontostand und Status eingeben.');
+      }
+      await updateAdminRecord('accounts', 'id', accountId, { balance: numericBalance, status }, 'Konto');
+    }
+
+    async function editInvoice(invoiceId) {
+      const invoice = state.invoices.find(item => String(item.id) === String(invoiceId));
+      if (!invoice) return;
+      const amount = prompt('Betrag:', invoice.amount);
+      if (amount === null) return;
+      const reason = prompt('Grund:', invoice.reason || 'Rechnung');
+      if (reason === null) return;
+      const status = prompt('Status (open, paid oder cancelled):', invoice.status);
+      if (status === null) return;
+      const numericAmount = Number(amount);
+      if (!Number.isFinite(numericAmount) || numericAmount <= 0 || !reason.trim() || !['open', 'paid', 'cancelled'].includes(status)) {
+        return alert('Bitte gültigen Betrag, Grund und Status eingeben.');
+      }
+      await updateAdminRecord('invoices', 'id', invoiceId, { amount: numericAmount, reason: reason.trim(), status, paid_at: status === 'paid' ? (invoice.paid_at || new Date().toISOString()) : null }, 'Rechnung');
+    }
+
+    async function editVehicle(vehicleId) {
+      const vehicle = state.vehicles.find(item => item.vehicle_id === vehicleId);
+      if (!vehicle) return;
+      const name = prompt('Name:', vehicle.name);
+      if (name === null) return;
+      const vehicleClass = prompt('Fahrzeugklasse:', vehicle.vehicle_class);
+      if (vehicleClass === null) return;
+      const price = prompt('Preis:', vehicle.price);
+      if (price === null) return;
+      const status = prompt('Status (neu, active oder Occasion):', vehicle.status);
+      if (status === null) return;
+      const numericPrice = Number(price);
+      if (!name.trim() || !vehicleClass.trim() || !Number.isFinite(numericPrice) || numericPrice < 0 || !['neu', 'active', 'Occasion'].includes(status)) {
+        return alert('Bitte gültige Fahrzeugdaten eingeben.');
+      }
+      await updateAdminRecord('vehicles', 'vehicle_id', vehicleId, { name: name.trim(), vehicle_class: vehicleClass.trim(), price: numericPrice, status }, 'Fahrzeug');
+    }
+
+    async function editLicense(licenseId) {
+      const license = state.licenses.find(item => String(item.id) === String(licenseId));
+      if (!license) return;
+      const licenseClass = prompt('Führerscheinklasse:', license.license_class);
+      if (licenseClass === null) return;
+      if (!licenseClass.trim()) return alert('Die Führerscheinklasse darf nicht leer sein.');
+      await updateAdminRecord('licenses', 'id', licenseId, { license_class: licenseClass.trim() }, 'Führerschein');
+    }
+
+    async function editLogistics(logisticsId) {
+      const entry = state.logistics.find(item => String(item.id) === String(logisticsId));
+      if (!entry) return;
+      const itemName = prompt('Artikel:', entry.item_name);
+      if (itemName === null) return;
+      const quantity = prompt('Menge:', entry.quantity);
+      if (quantity === null) return;
+      const unitPrice = prompt('Einzelpreis:', entry.unit_price);
+      if (unitPrice === null) return;
+      const direction = prompt('Richtung (eingang oder ausgang):', entry.direction);
+      if (direction === null) return;
+      const numericQuantity = Number(quantity);
+      const numericPrice = Number(unitPrice);
+      if (!itemName.trim() || !Number.isInteger(numericQuantity) || numericQuantity <= 0 || !Number.isFinite(numericPrice) || numericPrice < 0 || !['eingang', 'ausgang'].includes(direction)) {
+        return alert('Bitte gültige Logistikdaten eingeben.');
+      }
+      await updateAdminRecord('logistics', 'id', logisticsId, { item_name: itemName.trim(), quantity: numericQuantity, unit_price: numericPrice, direction }, 'Logistikbuchung');
+    }
+
+    async function editProduct(productId) {
+      const product = state.products.find(item => String(item.id) === String(productId));
+      if (!product) return;
+      const itemName = prompt('Artikelname:', product.item_name);
+      if (itemName === null) return;
+      const unitPrice = prompt('Preis:', product.unit_price);
+      if (unitPrice === null) return;
+      const quantity = prompt('Menge:', product.quantity);
+      if (quantity === null) return;
+      const numericPrice = Number(unitPrice);
+      const numericQuantity = Number(quantity);
+      if (!itemName.trim() || !Number.isFinite(numericPrice) || numericPrice < 0 || !Number.isInteger(numericQuantity) || numericQuantity < 0) {
+        return alert('Bitte gültige Katalogdaten eingeben.');
+      }
+      await updateAdminRecord('logistics_items', 'id', productId, { item_name: itemName.trim(), unit_price: numericPrice, quantity: numericQuantity }, 'Katalogartikel');
+    }
+
+    async function editOrder(orderId) {
+      const order = state.orders.find(item => String(item.id) === String(orderId));
+      if (!order) return;
+      const totalAmount = prompt('Gesamtbetrag:', order.total_amount);
+      if (totalAmount === null) return;
+      const status = prompt('Status (created, paid oder cancelled):', order.status);
+      if (status === null) return;
+      const numericAmount = Number(totalAmount);
+      if (!Number.isFinite(numericAmount) || numericAmount <= 0 || !['created', 'paid', 'cancelled'].includes(status)) {
+        return alert('Bitte gültigen Betrag und Status eingeben.');
+      }
+      await updateAdminRecord('orders', 'id', orderId, { total_amount: numericAmount, status }, 'Bestellung');
+    }
+
+    function editWarehouseStock(companyId, productName) {
+      const items = getCompanyWarehouse(companyId);
+      const item = items.find(entry => String(entry.product_name) === String(productName));
+      if (!item) return;
+      const amount = prompt('Menge:', item.amount || item.quantity || 0);
+      if (amount === null) return;
+      const unitPrice = prompt('Preis:', item.unit_price || 0);
+      if (unitPrice === null) return;
+      const numericAmount = Number(amount);
+      const numericPrice = Number(unitPrice);
+      if (!Number.isInteger(numericAmount) || numericAmount < 0 || !Number.isFinite(numericPrice) || numericPrice < 0) {
+        return alert('Bitte gültige Lagerdaten eingeben.');
+      }
+      setCompanyWarehouse(companyId, items.map(entry => String(entry.product_name) === String(productName) ? { ...entry, amount: numericAmount, unit_price: numericPrice, updated_at: new Date().toISOString() } : entry));
+      renderAll();
+    }
+
+    function deleteWarehouseStock(companyId, productName) {
+      if (!confirm('Lagerbestand wirklich löschen?')) return;
+      setCompanyWarehouse(companyId, getCompanyWarehouse(companyId).filter(entry => String(entry.product_name) !== String(productName)));
+      renderAll();
+    }
+
     async function deleteRecord(table, field, value, label) {
       if (!confirm(`${label} wirklich endgültig löschen?`)) return;
       const result = await db.from(table).delete().eq(field, value);
@@ -793,7 +974,7 @@
         $('#citizen-detail').textContent = 'Wähle einen Bürger aus der Liste.';
         $('#citizen-detail').className = 'empty';
       }
-      loadAll();
+      await loadAll();
     }
 
     async function approveCompany(id) {
