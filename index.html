@@ -265,6 +265,19 @@
       return state.citizens.map(c => ({ id: String(c.citizen_id), label: `${c.first_name} ${c.last_name} (${c.citizen_id})`, type: 'citizen' }));
     }
 
+    function getEntityName(type, id) {
+      if (type === 'company') {
+        const company = state.companies.find(c => String(c.id) === String(id));
+        return company ? `${company.company_name} (${company.id})` : `Unternehmen ${id}`;
+      }
+      const citizen = state.citizens.find(c => String(c.citizen_id) === String(id));
+      return citizen ? `${citizen.first_name} ${citizen.last_name} (${citizen.citizen_id})` : `Bürger ${id}`;
+    }
+
+    function randomInvoiceNumber() {
+      return String(Math.floor(10000 + Math.random() * 90000));
+    }
+
     function updateEntityDropdowns() {
       const senderType = $('#invoice-sender-type') ? $('#invoice-sender-type').value : 'citizen';
       const receiverType = $('#invoice-receiver-type') ? $('#invoice-receiver-type').value : 'citizen';
@@ -488,7 +501,14 @@
 
     function renderInvoices() {
       $('#invoice-rows').innerHTML = state.invoices.length
-        ? state.invoices.map(i => `<tr><td>${esc(i.id)}</td><td>${esc(i.from_account_id)}</td><td>${esc(i.to_account_id)}</td><td class="money">${money(i.amount)}</td><td><span class="tag ${esc(i.status)}">${esc(i.status)}</span></td><td>${i.status === 'open' ? `<button class="btn" data-pay="${esc(i.id)}">Jetzt bezahlen</button>` : '-'}</td></tr>`).join('')
+        ? state.invoices.map(i => {
+            const senderAccount = state.accounts.find(a => String(a.id) === String(i.from_account_id));
+            const receiverAccount = state.accounts.find(a => String(a.id) === String(i.to_account_id));
+            const senderLabel = senderAccount ? getEntityName(senderAccount.type === 'unternehmen' ? 'company' : 'citizen', senderAccount.type === 'unternehmen' ? senderAccount.company_id : senderAccount.citizen_id) : 'Unbekannt';
+            const receiverLabel = receiverAccount ? getEntityName(receiverAccount.type === 'unternehmen' ? 'company' : 'citizen', receiverAccount.type === 'unternehmen' ? receiverAccount.company_id : receiverAccount.citizen_id) : 'Unbekannt';
+            const invoiceNumber = i.invoice_number || `INV-${String(i.id).slice(-5)}`;
+            return `<tr><td>${esc(invoiceNumber)}</td><td>${esc(senderLabel)}</td><td>${esc(receiverLabel)}</td><td class="money">${money(i.amount)}</td><td><span class="tag ${esc(i.status)}">${esc(i.status)}</span></td><td>${i.status === 'open' ? `<button class="btn" data-pay="${esc(i.id)}">Jetzt bezahlen</button>` : '-'}</td></tr>`;
+          }).join('')
         : '<tr><td colspan="6" class="empty">Keine Rechnungen.</td></tr>';
       $$('[data-pay]').forEach(button => button.addEventListener('click', () => payInvoice(button.dataset.pay)));
     }
@@ -608,6 +628,7 @@
       }
 
       const invoice = {
+        invoice_number: `INV-${randomInvoiceNumber()}`,
         from_account_id: senderAccount.id,
         to_account_id: receiverAccount.id,
         amount,
@@ -676,10 +697,21 @@
     }
 
     async function payInvoice(invoiceId) {
+      const numericInvoiceId = Number(invoiceId);
+      if (!Number.isFinite(numericInvoiceId) || numericInvoiceId <= 0) {
+        message('#invoice-msg', 'Ungültige Rechnungs-ID.', false);
+        return;
+      }
+
       try {
-        await rpc('pay_invoice', { invoice_id: invoiceId }, '#invoice-msg');
+        await rpc('pay_invoice', { invoice_id: numericInvoiceId }, '#invoice-msg');
       } catch (err) {
-        message('#invoice-msg', 'Zahlung fehlgeschlagen: ' + err.message);
+        const msg = err?.message || 'Unbekannter Fehler';
+        if (msg.includes('Could not find the function') || msg.includes('does not exist')) {
+          message('#invoice-msg', 'Supabase-Funktion fehlt: Bitte in Supabase die Funktion public.pay_invoice(bigint) anlegen.', false);
+          return;
+        }
+        message('#invoice-msg', 'Zahlung fehlgeschlagen: ' + msg);
       }
     }
 
