@@ -488,7 +488,7 @@
 
     function renderInvoices() {
       $('#invoice-rows').innerHTML = state.invoices.length
-        ? state.invoices.map(i => `<tr><td>${esc(i.id)}</td><td>${esc(i.from_account_id)}</td><td>${esc(i.to_account_id)}</td><td class="money">${money(i.amount)}</td><td><span class="tag ${esc(i.status)}">${esc(i.status)}</span></td><td>${i.status === 'open' ? `<button class="btn" data-pay="${esc(i.id)}">Bezahlen</button>` : '-'}</td></tr>`).join('')
+        ? state.invoices.map(i => `<tr><td>${esc(i.id)}</td><td>${esc(i.from_account_id)}</td><td>${esc(i.to_account_id)}</td><td class="money">${money(i.amount)}</td><td><span class="tag ${esc(i.status)}">${esc(i.status)}</span></td><td>${i.status === 'open' ? `<button class="btn" data-pay="${esc(i.id)}">Jetzt bezahlen</button>` : '-'}</td></tr>`).join('')
         : '<tr><td colspan="6" class="empty">Keine Rechnungen.</td></tr>';
       $$('[data-pay]').forEach(button => button.addEventListener('click', () => payInvoice(button.dataset.pay)));
     }
@@ -608,34 +608,21 @@
       }
 
       const invoice = {
-        id: id('INV'),
         from_account_id: senderAccount.id,
         to_account_id: receiverAccount.id,
         amount,
         reason: f.get('reason') || 'Rechnung',
-        status: 'paid'
+        status: 'open'
       };
 
       try {
-        const result = await db.from('invoices').insert(invoice);
+        const result = await db.from('invoices').insert(invoice).select().single();
         if (result.error) throw result.error;
-
-        senderAccount.balance = Number(senderAccount.balance || 0) - amount;
-        receiverAccount.balance = Number(receiverAccount.balance || 0) + amount;
-
-        saveAccountMovement({ id: id('MOV'), type: 'outgoing', amount, account_id: senderAccount.id, company_id: senderType === 'company' ? senderId : null, receiver_company_id: receiverType === 'company' ? receiverId : null, note: invoice.reason });
-        saveAccountMovement({ id: id('MOV'), type: 'incoming', amount, account_id: receiverAccount.id, company_id: receiverType === 'company' ? receiverId : null, sender_company_id: senderType === 'company' ? senderId : null, note: invoice.reason });
-
-        state.invoices.unshift(invoice);
+        await loadAll();
         message('#invoice-msg', 'Rechnung wurde erfolgreich gestellt.', true);
         e.target.reset();
-        renderInvoices();
       } catch (err) {
-        state.invoices.unshift({ ...invoice, created_at: new Date().toISOString() });
-        saveAccountMovement({ id: id('MOV'), type: 'outgoing', amount, account_id: senderAccount.id, company_id: senderType === 'company' ? senderId : null, receiver_company_id: receiverType === 'company' ? receiverId : null, note: invoice.reason });
-        saveAccountMovement({ id: id('MOV'), type: 'incoming', amount, account_id: receiverAccount.id, company_id: receiverType === 'company' ? receiverId : null, sender_company_id: senderType === 'company' ? senderId : null, note: invoice.reason });
-        message('#invoice-msg', 'Rechnung lokal gespeichert. Supabase-Fehler: ' + err.message, false);
-        renderInvoices();
+        message('#invoice-msg', 'Rechnung konnte nicht gespeichert werden: ' + err.message, false);
       }
     });
 
