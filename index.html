@@ -214,7 +214,8 @@
         <h1>Transportstatus</h1>
         <p>Alle offenen und abgeschlossenen Transportaufträge zentral im Blick.</p>
       </div>
-      <div class="card"><div class="tablewrap"><table class="table"><thead><tr><th>Auftrag</th><th>Waren</th><th>Abholung</th><th>Lieferort</th><th>Gebühr</th><th>Status</th></tr></thead><tbody id="transport-status-rows"></tbody></table></div></div>
+      <div class="card"><div class="tablewrap"><table class="table"><thead><tr><th>Auftrag</th><th>Waren</th><th>Besteller</th><th>Lieferort</th><th>Gebühr</th><th>Status</th><th>Aktion</th></tr></thead><tbody id="transport-status-rows"></tbody></table></div></div>
+      <div class="card"><h2>Transportakte</h2><div id="transport-detail" class="empty">Wähle einen Transportauftrag aus.</div></div>
     </section>
 
     <section id="admin" class="view">
@@ -442,8 +443,43 @@
     }
 
     function renderTransportStatus() {
-      const rows = (state.transportJobs || []).map(job => `<tr><td><strong>${esc(job.id)}</strong></td><td>${esc(job.item_name)} (${esc(job.quantity)})</td><td>${esc(job.pickup_location)}</td><td>${esc(job.delivery_location)}</td><td class="money">${money(job.transport_fee)}</td><td><span class="tag ${esc(job.status)}">${esc(job.status)}</span></td></tr>`);
-      $('#transport-status-rows').innerHTML = rows.join('') || '<tr><td colspan="6" class="empty">Keine Transportaufträge vorhanden.</td></tr>';
+      const rows = (state.transportJobs || []).map(job => `<tr><td><strong>${esc(job.id)}</strong></td><td>${esc(job.item_name)} (${esc(job.quantity)})</td><td>${esc(getTransportBuyer(job))}</td><td>${esc(job.delivery_location)}</td><td class="money">${money(job.transport_fee)}</td><td><span class="tag ${esc(job.status)}">${esc(job.status)}</span></td><td><button class="btn alt" data-transport-open="${esc(job.id)}">Akte öffnen</button></td></tr>`);
+      $('#transport-status-rows').innerHTML = rows.join('') || '<tr><td colspan="7" class="empty">Keine Transportaufträge vorhanden.</td></tr>';
+      $$('[data-transport-open]').forEach(button => button.addEventListener('click', () => openTransportJob(button.dataset.transportOpen)));
+    }
+
+    function getTransportBuyer(job) {
+      const account = state.accounts.find(item => String(item.id) === String(job.account_id));
+      if (!account) return 'Unbekannt';
+      if (account.company_id) {
+        const company = state.companies.find(item => String(item.id) === String(account.company_id));
+        return company ? `${company.company_name} (${company.id})` : `Unternehmen ${account.company_id}`;
+      }
+      const citizen = state.citizens.find(item => item.citizen_id === account.citizen_id);
+      return citizen ? `${citizen.first_name} ${citizen.last_name} (${citizen.citizen_id})` : `Bürger ${account.citizen_id}`;
+    }
+
+    function openTransportJob(jobId) {
+      const job = state.transportJobs.find(item => String(item.id) === String(jobId));
+      if (!job) return;
+      const items = Array.isArray(job.items_json) ? job.items_json : [];
+      const itemRows = items.length
+        ? items.map(item => `<tr><td>${esc(item.item_name)}</td><td>${esc(item.order_quantity || 1)}</td><td class="money">${money(item.unit_price)}</td><td>${esc(item.company_name || (item.source === 'company' ? 'Firmenlager' : 'Mezzorik Logistik'))}</td></tr>`).join('')
+        : `<tr><td>${esc(job.item_name)}</td><td>${esc(job.quantity)}</td><td>-</td><td>Manueller Auftrag</td></tr>`;
+      $('#transport-detail').innerHTML = `<p><strong>Besteller:</strong> ${esc(getTransportBuyer(job))}</p><p><strong>Abholung:</strong> ${esc(job.pickup_location)}<br><strong>Lieferort:</strong> ${esc(job.delivery_location)}<br><strong>Status:</strong> ${esc(job.status)}</p><div class="tablewrap"><table class="table"><thead><tr><th>Produkt</th><th>Menge</th><th>Einzelpreis</th><th>Quelle</th></tr></thead><tbody>${itemRows}</tbody></table></div><div class="actions"><button class="btn" data-transport-status="angenommen" data-transport-id="${esc(job.id)}">Angenommen</button><button class="btn alt" data-transport-status="beladen" data-transport-id="${esc(job.id)}">Beladen</button><button class="btn alt" data-transport-status="unterwegs" data-transport-id="${esc(job.id)}">Auf dem Weg</button><button class="btn alt" data-transport-status="erledigt" data-transport-id="${esc(job.id)}">Erledigt</button></div><p id="transport-detail-msg" class="msg"></p>`;
+      $$('[data-transport-status]').forEach(button => button.addEventListener('click', () => updateTransportStatus(button.dataset.transportId, button.dataset.transportStatus)));
+      navigate('transport-status');
+    }
+
+    async function updateTransportStatus(jobId, status) {
+      try {
+        const result = await db.rpc('update_transport_status', { transport_job_id: Number(jobId), next_status: status });
+        if (result.error) throw result.error;
+        await loadAll();
+        openTransportJob(jobId);
+      } catch (error) {
+        message('#transport-detail-msg', 'Status konnte nicht geändert werden: ' + error.message);
+      }
     }
 
     function renderCitizens() {
