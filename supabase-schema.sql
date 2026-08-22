@@ -400,8 +400,8 @@ begin
   if not public.is_admin() then raise exception 'Nur Admins duerfen Benutzer anlegen'; end if;
   if clean_username !~ '^[a-z0-9._-]{3,40}$' then raise exception 'Ungueltiger Benutzername'; end if;
   if p_password is null or length(p_password) < 8 then raise exception 'Das Passwort muss mindestens 8 Zeichen lang sein'; end if;
-  insert into auth.users(id, email, encrypted_password, email_confirmed_at, confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
-    values (new_id, clean_username || '@login.gnadental.local', crypt(p_password, gen_salt('bf')), now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, jsonb_build_object('username', clean_username), 'authenticated', 'authenticated');
+  insert into auth.users(id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
+    values (new_id, clean_username || '@login.gnadental.local', crypt(p_password, gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, jsonb_build_object('username', clean_username), 'authenticated', 'authenticated');
   insert into public.profiles(id, username) values (new_id, clean_username) returning * into new_profile;
   insert into public.audit_log(user_id, username, action, table_name, record_id, new_data)
     values (auth.uid(), (select username from public.profiles where id = auth.uid()), 'CREATE_USER', 'profiles', new_id::text, jsonb_build_object('username', clean_username));
@@ -492,13 +492,13 @@ declare
   user_id uuid := gen_random_uuid();
 begin
   if not exists (select 1 from public.profiles where username = 'nexora.24') then
-    insert into auth.users(id, email, encrypted_password, email_confirmed_at, confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
-      values (admin_id, 'nexora.24@login.gnadental.local', crypt('Geswalriga.06', gen_salt('bf')), now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"nexora.24"}'::jsonb, 'authenticated', 'authenticated');
+    insert into auth.users(id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
+      values (admin_id, 'nexora.24@login.gnadental.local', crypt('Geswalriga.06', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"nexora.24"}'::jsonb, 'authenticated', 'authenticated');
     insert into public.profiles(id, username, role) values (admin_id, 'nexora.24', 'admin');
   end if;
   if not exists (select 1 from public.profiles where username = 'santobarbosa') then
-    insert into auth.users(id, email, encrypted_password, email_confirmed_at, confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
-      values (user_id, 'santobarbosa@login.gnadental.local', crypt('MozaGeswalriga.06', gen_salt('bf')), now(), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"santobarbosa"}'::jsonb, 'authenticated', 'authenticated');
+    insert into auth.users(id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
+      values (user_id, 'santobarbosa@login.gnadental.local', crypt('MozaGeswalriga.06', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"santobarbosa"}'::jsonb, 'authenticated', 'authenticated');
     insert into public.profiles(id, username, role) values (user_id, 'santobarbosa', 'user');
   end if;
 end;
