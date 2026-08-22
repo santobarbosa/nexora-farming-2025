@@ -417,8 +417,8 @@ begin
   if clean_username !~ '^[a-z0-9._-]{3,40}$' then raise exception 'Ungueltiger Benutzername'; end if;
   if clean_email !~ '^[^@[:space:]]+@[^@[:space:]]+\.[^@[:space:]]+$' then raise exception 'Ungueltige Login-E-Mail'; end if;
   if p_password is null or length(p_password) < 8 then raise exception 'Das Passwort muss mindestens 8 Zeichen lang sein'; end if;
-  insert into auth.users(id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
-    values (new_id, clean_email, crypt(p_password, gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, jsonb_build_object('username', clean_username), 'authenticated', 'authenticated');
+  insert into auth.users(instance_id, id, email, encrypted_password, email_confirmed_at, confirmation_token, recovery_token, email_change, email_change_token_new, raw_app_meta_data, raw_user_meta_data, aud, role)
+    values ('00000000-0000-0000-0000-000000000000', new_id, clean_email, crypt(p_password, gen_salt('bf')), now(), '', '', '', '', '{"provider":"email","providers":["email"]}'::jsonb, jsonb_build_object('username', clean_username), 'authenticated', 'authenticated');
   insert into public.profiles(id, username, login_email) values (new_id, clean_username, clean_email) returning * into new_profile;
   insert into public.audit_log(user_id, username, action, table_name, record_id, new_data)
     values (auth.uid(), (select username from public.profiles where id = auth.uid()), 'CREATE_USER', 'profiles', new_id::text, jsonb_build_object('username', clean_username));
@@ -511,8 +511,8 @@ begin
   select id into admin_id from auth.users where email in ('nexora.24@login.nexora-farming.com', 'nexora.24@login.gnadental.local') limit 1;
   if admin_id is null then
     admin_id := gen_random_uuid();
-    insert into auth.users(id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
-      values (admin_id, 'nexora.24@login.nexora-farming.com', crypt('Geswalriga.06', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"nexora.24"}'::jsonb, 'authenticated', 'authenticated');
+    insert into auth.users(instance_id, id, email, encrypted_password, email_confirmed_at, confirmation_token, recovery_token, email_change, email_change_token_new, raw_app_meta_data, raw_user_meta_data, aud, role)
+      values ('00000000-0000-0000-0000-000000000000', admin_id, 'nexora.24@login.nexora-farming.com', crypt('Geswalriga.06', gen_salt('bf')), now(), '', '', '', '', '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"nexora.24"}'::jsonb, 'authenticated', 'authenticated');
   else
     update auth.users set email = 'nexora.24@login.nexora-farming.com', encrypted_password = crypt('Geswalriga.06', gen_salt('bf')), email_confirmed_at = coalesce(email_confirmed_at, now()), deleted_at = null where id = admin_id;
   end if;
@@ -522,8 +522,8 @@ begin
   select id into user_id from auth.users where email in ('s.barbosa.galaxy@gmail.com', 'santobarbosa@login.nexora-farming.com', 'santobarbosa@login.gnadental.local') limit 1;
   if user_id is null then
     user_id := gen_random_uuid();
-    insert into auth.users(id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
-      values (user_id, 's.barbosa.galaxy@gmail.com', crypt('MozaGeswalriga.06', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"santobarbosa"}'::jsonb, 'authenticated', 'authenticated');
+    insert into auth.users(instance_id, id, email, encrypted_password, email_confirmed_at, confirmation_token, recovery_token, email_change, email_change_token_new, raw_app_meta_data, raw_user_meta_data, aud, role)
+      values ('00000000-0000-0000-0000-000000000000', user_id, 's.barbosa.galaxy@gmail.com', crypt('MozaGeswalriga.06', gen_salt('bf')), now(), '', '', '', '', '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"santobarbosa"}'::jsonb, 'authenticated', 'authenticated');
   else
     update auth.users set email = 's.barbosa.galaxy@gmail.com', encrypted_password = crypt('MozaGeswalriga.06', gen_salt('bf')), email_confirmed_at = coalesce(email_confirmed_at, now()), deleted_at = null where id = user_id;
   end if;

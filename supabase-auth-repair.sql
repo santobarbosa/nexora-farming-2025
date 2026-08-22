@@ -22,8 +22,8 @@ begin
   select id into account_id from auth.users where email in ('s.barbosa.galaxy@gmail.com', 'santobarbosa@login.nexora-farming.com', 'santobarbosa@login.gnadental.local') limit 1;
   if account_id is null then
     account_id := gen_random_uuid();
-    insert into auth.users(id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
-      values (account_id, 's.barbosa.galaxy@gmail.com', crypt('MozaGeswalriga.06', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"santobarbosa"}'::jsonb, 'authenticated', 'authenticated');
+    insert into auth.users(instance_id, id, email, encrypted_password, email_confirmed_at, confirmation_token, recovery_token, email_change, email_change_token_new, raw_app_meta_data, raw_user_meta_data, aud, role)
+      values ('00000000-0000-0000-0000-000000000000', account_id, 's.barbosa.galaxy@gmail.com', crypt('MozaGeswalriga.06', gen_salt('bf')), now(), '', '', '', '', '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"santobarbosa"}'::jsonb, 'authenticated', 'authenticated');
   else
     update auth.users
       set email = 's.barbosa.galaxy@gmail.com',
