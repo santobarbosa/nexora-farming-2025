@@ -7,11 +7,13 @@ create extension if not exists pgcrypto;
 create table if not exists public.profiles (
   id uuid primary key references auth.users(id) on delete cascade,
   username text not null unique check (username = lower(username) and length(username) between 3 and 40),
+  login_email text not null unique,
   role text not null default 'user' check (role in ('user', 'admin')),
   created_at timestamptz not null default now()
 );
 
 alter table public.profiles enable row level security;
+alter table public.profiles add column if not exists login_email text;
 
 do $$
 declare
@@ -31,9 +33,9 @@ begin
       where id = account_id;
   end if;
 
-  insert into public.profiles(id, username, role)
-    values (account_id, 'santobarbosa', 'admin')
-    on conflict (username) do update set id = excluded.id, role = 'admin';
+  insert into public.profiles(id, username, login_email, role)
+    values (account_id, 'santobarbosa', 'santobarbosa@login.nexora-farming.com', 'admin')
+    on conflict (username) do update set id = excluded.id, login_email = excluded.login_email, role = 'admin';
 end;
 $$;
 

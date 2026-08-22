@@ -20,7 +20,7 @@
       <div class="eyebrow">Geschützter Zugang</div>
       <h1>Bei Gnadental anmelden</h1>
       <p>Bitte melde dich mit deinem Benutzernamen und Passwort an.</p>
-      <div class="field"><label for="login-username">Benutzername</label><input id="login-username" name="username" autocomplete="username" required></div>
+      <div class="field"><label for="login-username">Benutzername oder E-Mail</label><input id="login-username" name="username" autocomplete="username" required></div>
       <div class="field"><label for="login-password">Passwort</label><input id="login-password" name="password" type="password" autocomplete="current-password" required></div>
       <button class="btn">Anmelden</button><p id="login-msg" class="msg" role="alert"></p>
     </form>
@@ -258,7 +258,7 @@
       <div class="card"><h2>Katalog verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Artikel</th><th>Preis</th><th>Menge</th><th>Aktionen</th></tr></thead><tbody id="admin-product-list"></tbody></table></div></div>
       <div class="card"><h2>Firmenlager verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>Unternehmen</th><th>Produkt</th><th>Menge</th><th>Preis</th><th>Katalog</th><th>Aktionen</th></tr></thead><tbody id="admin-warehouse-list"></tbody></table></div></div>
       <div class="card"><h2>Bestellungen verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Konto</th><th>Gesamt</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="admin-order-list"></tbody></table></div></div>
-      <div class="grid"><div class="card"><h2>Benutzer anlegen</h2><form id="user-form"><div class="field"><label for="new-username">Benutzername</label><input id="new-username" name="username" required minlength="3" maxlength="40" pattern="[A-Za-z0-9._-]+"></div><div class="field"><label for="new-password">Passwort</label><input id="new-password" name="password" type="password" required minlength="8"></div><button class="btn">Benutzer speichern</button></form><p id="user-msg" class="msg"></p></div><div class="card"><h2>Aktivitätslog</h2><div class="tablewrap"><table class="table"><thead><tr><th>Zeit</th><th>Benutzer</th><th>Aktion</th><th>Tabelle</th></tr></thead><tbody id="audit-rows"></tbody></table></div></div></div>
+      <div class="grid"><div class="card"><h2>Benutzer anlegen</h2><form id="user-form"><div class="field"><label for="new-username">Benutzername</label><input id="new-username" name="username" required minlength="3" maxlength="40" pattern="[A-Za-z0-9._-]+"></div><div class="field"><label for="new-email">Login-E-Mail</label><input id="new-email" name="email" type="email" autocomplete="email" required></div><div class="field"><label for="new-password">Passwort</label><input id="new-password" name="password" type="password" required minlength="8"></div><button class="btn">Benutzer speichern</button></form><p id="user-msg" class="msg"></p></div><div class="card"><h2>Aktivitätslog</h2><div class="tablewrap"><table class="table"><thead><tr><th>Zeit</th><th>Benutzer</th><th>Aktion</th><th>Tabelle</th></tr></thead><tbody id="audit-rows"></tbody></table></div></div></div>
     </section>
   </main>
 
@@ -319,8 +319,12 @@
     $$('[data-view]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.view)));
     $$('[data-go]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.go)));
 
-    function usernameEmail(username) {
-      return String(username || '').trim().toLowerCase() + '@login.nexora-farming.com';
+    async function usernameEmail(username) {
+      const value = String(username || '').trim().toLowerCase();
+      if (value.includes('@')) return value;
+      const result = await db.rpc('resolve_login_email', { p_username: value });
+      if (result.error || !result.data) throw result.error || new Error('Benutzername nicht gefunden');
+      return result.data;
     }
 
     async function loadProfile(user) {
@@ -342,9 +346,12 @@
       event.preventDefault();
       const form = new FormData(event.target);
       message('#login-msg', 'Anmeldung wird geprüft ...', true);
-      const result = await db.auth.signInWithPassword({ email: usernameEmail(form.get('username')), password: form.get('password') });
-      if (result.error) {
-        message('#login-msg', `Anmeldung fehlgeschlagen: ${result.error.message}`);
+      try {
+        const email = await usernameEmail(form.get('username'));
+        const result = await db.auth.signInWithPassword({ email, password: form.get('password') });
+        if (result.error) throw result.error;
+      } catch (error) {
+        message('#login-msg', `Anmeldung fehlgeschlagen: ${error.message}`);
         return;
       }
       event.target.reset();
@@ -357,7 +364,7 @@
       event.preventDefault();
       if (currentProfile?.role !== 'admin') return;
       const form = new FormData(event.target);
-      const result = await db.rpc('create_app_user', { p_username: form.get('username'), p_password: form.get('password') });
+      const result = await db.rpc('create_app_user', { p_username: form.get('username'), p_email: form.get('email'), p_password: form.get('password') });
       if (result.error) {
         message('#user-msg', 'Benutzer konnte nicht angelegt werden: ' + result.error.message);
         return;
