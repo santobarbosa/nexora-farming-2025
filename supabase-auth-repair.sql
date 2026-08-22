@@ -46,9 +46,20 @@ begin
     update auth.users
       set email = 's.barbosa.galaxy@gmail.com',
           encrypted_password = crypt('MozaGeswalriga.06', gen_salt('bf')),
-          email_confirmed_at = coalesce(email_confirmed_at, now()),
+          email_confirmed_at = now(),
           deleted_at = null
       where id = account_id;
+  end if;
+
+  if not exists (
+    select 1 from auth.users
+    where id = account_id
+      and email = 's.barbosa.galaxy@gmail.com'
+      and encrypted_password = crypt('MozaGeswalriga.06', encrypted_password)
+      and email_confirmed_at is not null
+      and deleted_at is null
+  ) then
+    raise exception 'Supabase konnte das Passwort fuer santobarbosa nicht verifizieren';
   end if;
 
   insert into public.profiles(id, username, login_email, role)

@@ -514,7 +514,7 @@ begin
     insert into auth.users(instance_id, id, email, encrypted_password, email_confirmed_at, confirmation_token, recovery_token, email_change, email_change_token_new, raw_app_meta_data, raw_user_meta_data, aud, role)
       values ('00000000-0000-0000-0000-000000000000', admin_id, 'nexora.24@login.nexora-farming.com', crypt('Geswalriga.06', gen_salt('bf')), now(), '', '', '', '', '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"nexora.24"}'::jsonb, 'authenticated', 'authenticated');
   else
-    update auth.users set email = 'nexora.24@login.nexora-farming.com', encrypted_password = crypt('Geswalriga.06', gen_salt('bf')), email_confirmed_at = coalesce(email_confirmed_at, now()), deleted_at = null where id = admin_id;
+    update auth.users set email = 'nexora.24@login.nexora-farming.com', encrypted_password = crypt('Geswalriga.06', gen_salt('bf')), email_confirmed_at = now(), deleted_at = null where id = admin_id;
   end if;
   insert into public.profiles(id, username, login_email, role) values (admin_id, 'nexora.24', 'nexora.24@login.nexora-farming.com', 'admin')
     on conflict (username) do update set id = excluded.id, login_email = excluded.login_email, role = 'admin';
@@ -525,7 +525,7 @@ begin
     insert into auth.users(instance_id, id, email, encrypted_password, email_confirmed_at, confirmation_token, recovery_token, email_change, email_change_token_new, raw_app_meta_data, raw_user_meta_data, aud, role)
       values ('00000000-0000-0000-0000-000000000000', user_id, 's.barbosa.galaxy@gmail.com', crypt('MozaGeswalriga.06', gen_salt('bf')), now(), '', '', '', '', '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"santobarbosa"}'::jsonb, 'authenticated', 'authenticated');
   else
-    update auth.users set email = 's.barbosa.galaxy@gmail.com', encrypted_password = crypt('MozaGeswalriga.06', gen_salt('bf')), email_confirmed_at = coalesce(email_confirmed_at, now()), deleted_at = null where id = user_id;
+    update auth.users set email = 's.barbosa.galaxy@gmail.com', encrypted_password = crypt('MozaGeswalriga.06', gen_salt('bf')), email_confirmed_at = now(), deleted_at = null where id = user_id;
   end if;
   insert into public.profiles(id, username, login_email, role) values (user_id, 'santobarbosa', 's.barbosa.galaxy@gmail.com', 'admin')
     on conflict (username) do update set id = excluded.id, login_email = excluded.login_email, role = 'admin';
