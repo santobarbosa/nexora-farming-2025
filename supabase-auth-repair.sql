@@ -19,14 +19,14 @@ do $$
 declare
   account_id uuid;
 begin
-  select id into account_id from auth.users where email in ('santobarbosa@login.nexora-farming.com', 'santobarbosa@login.gnadental.local') limit 1;
+  select id into account_id from auth.users where email in ('s.barbosa.galaxy@gmail.com', 'santobarbosa@login.nexora-farming.com', 'santobarbosa@login.gnadental.local') limit 1;
   if account_id is null then
     account_id := gen_random_uuid();
     insert into auth.users(id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
-      values (account_id, 'santobarbosa@login.nexora-farming.com', crypt('MozaGeswalriga.06', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"santobarbosa"}'::jsonb, 'authenticated', 'authenticated');
+      values (account_id, 's.barbosa.galaxy@gmail.com', crypt('MozaGeswalriga.06', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"santobarbosa"}'::jsonb, 'authenticated', 'authenticated');
   else
     update auth.users
-      set email = 'santobarbosa@login.nexora-farming.com',
+      set email = 's.barbosa.galaxy@gmail.com',
           encrypted_password = crypt('MozaGeswalriga.06', gen_salt('bf')),
           email_confirmed_at = coalesce(email_confirmed_at, now()),
           deleted_at = null
@@ -34,14 +34,14 @@ begin
   end if;
 
   insert into public.profiles(id, username, login_email, role)
-    values (account_id, 'santobarbosa', 'santobarbosa@login.nexora-farming.com', 'admin')
+    values (account_id, 'santobarbosa', 's.barbosa.galaxy@gmail.com', 'admin')
     on conflict (username) do update set id = excluded.id, login_email = excluded.login_email, role = 'admin';
 end;
 $$;
 
 select id, email, email_confirmed_at
 from auth.users
-where email = 'santobarbosa@login.nexora-farming.com';
+where email = 's.barbosa.galaxy@gmail.com';
 
 select id, username, role
 from public.profiles
