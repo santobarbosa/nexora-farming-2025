@@ -351,7 +351,10 @@
         const result = await db.auth.signInWithPassword({ email, password: form.get('password') });
         if (result.error) throw result.error;
       } catch (error) {
-        message('#login-msg', `Anmeldung fehlgeschlagen: ${error.message}`);
+        const detail = error.message === 'Invalid login credentials'
+          ? 'Benutzername oder Passwort ist nicht korrekt. Bitte zuerst supabase-auth-repair.sql im Supabase SQL Editor ausführen.'
+          : error.message;
+        message('#login-msg', `Anmeldung fehlgeschlagen: ${detail}`);
         return;
       }
       event.target.reset();

@@ -15,6 +15,24 @@ create table if not exists public.profiles (
 alter table public.profiles enable row level security;
 alter table public.profiles add column if not exists login_email text;
 
+create or replace function public.resolve_login_email(p_username text)
+returns text
+language sql
+security definer
+set search_path = public
+as $$
+  select login_email
+  from public.profiles
+  where username = lower(trim(p_username));
+$$;
+
+grant execute on function public.resolve_login_email(text) to anon, authenticated;
+
+drop policy if exists profile_self_read on public.profiles;
+create policy profile_self_read on public.profiles
+  for select to authenticated
+  using (id = auth.uid());
+
 do $$
 declare
   account_id uuid;
