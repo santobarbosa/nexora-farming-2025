@@ -139,9 +139,9 @@ create table if not exists public.transport_jobs (
 alter table public.transport_jobs add column if not exists account_id bigint references public.accounts(id) on delete set null;
 alter table public.transport_jobs add column if not exists items_json jsonb not null default '[]'::jsonb;
 alter table public.transport_jobs add column if not exists stock_deducted boolean not null default false;
+alter table public.transport_jobs drop constraint if exists transport_jobs_status_check;
 update public.transport_jobs set status = 'angenommen' where status = 'bestaetigt';
 update public.transport_jobs set status = 'erledigt' where status = 'zugestellt';
-alter table public.transport_jobs drop constraint if exists transport_jobs_status_check;
 alter table public.transport_jobs add constraint transport_jobs_status_check check (status in ('offen', 'angenommen', 'beladen', 'unterwegs', 'erledigt', 'storniert'));
 
 create index if not exists companies_owner_idx on public.companies(owner_citizen_id);
@@ -401,7 +401,7 @@ begin
   if clean_username !~ '^[a-z0-9._-]{3,40}$' then raise exception 'Ungueltiger Benutzername'; end if;
   if p_password is null or length(p_password) < 8 then raise exception 'Das Passwort muss mindestens 8 Zeichen lang sein'; end if;
   insert into auth.users(id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
-    values (new_id, clean_username || '@login.gnadental.local', crypt(p_password, gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, jsonb_build_object('username', clean_username), 'authenticated', 'authenticated');
+    values (new_id, clean_username || '@login.nexora-farming.com', crypt(p_password, gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, jsonb_build_object('username', clean_username), 'authenticated', 'authenticated');
   insert into public.profiles(id, username) values (new_id, clean_username) returning * into new_profile;
   insert into public.audit_log(user_id, username, action, table_name, record_id, new_data)
     values (auth.uid(), (select username from public.profiles where id = auth.uid()), 'CREATE_USER', 'profiles', new_id::text, jsonb_build_object('username', clean_username));
@@ -491,24 +491,24 @@ declare
   admin_id uuid := gen_random_uuid();
   user_id uuid := gen_random_uuid();
 begin
-  select id into admin_id from auth.users where email = 'nexora.24@login.gnadental.local' limit 1;
+  select id into admin_id from auth.users where email in ('nexora.24@login.nexora-farming.com', 'nexora.24@login.gnadental.local') limit 1;
   if admin_id is null then
     admin_id := gen_random_uuid();
     insert into auth.users(id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
-      values (admin_id, 'nexora.24@login.gnadental.local', crypt('Geswalriga.06', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"nexora.24"}'::jsonb, 'authenticated', 'authenticated');
+      values (admin_id, 'nexora.24@login.nexora-farming.com', crypt('Geswalriga.06', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"nexora.24"}'::jsonb, 'authenticated', 'authenticated');
   else
-    update auth.users set encrypted_password = crypt('Geswalriga.06', gen_salt('bf')), email_confirmed_at = coalesce(email_confirmed_at, now()), deleted_at = null where id = admin_id;
+    update auth.users set email = 'nexora.24@login.nexora-farming.com', encrypted_password = crypt('Geswalriga.06', gen_salt('bf')), email_confirmed_at = coalesce(email_confirmed_at, now()), deleted_at = null where id = admin_id;
   end if;
   insert into public.profiles(id, username, role) values (admin_id, 'nexora.24', 'admin')
     on conflict (username) do update set id = excluded.id, role = 'admin';
 
-  select id into user_id from auth.users where email = 'santobarbosa@login.gnadental.local' limit 1;
+  select id into user_id from auth.users where email in ('santobarbosa@login.nexora-farming.com', 'santobarbosa@login.gnadental.local') limit 1;
   if user_id is null then
     user_id := gen_random_uuid();
     insert into auth.users(id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
-      values (user_id, 'santobarbosa@login.gnadental.local', crypt('MozaGeswalriga.06', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"santobarbosa"}'::jsonb, 'authenticated', 'authenticated');
+      values (user_id, 'santobarbosa@login.nexora-farming.com', crypt('MozaGeswalriga.06', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"santobarbosa"}'::jsonb, 'authenticated', 'authenticated');
   else
-    update auth.users set encrypted_password = crypt('MozaGeswalriga.06', gen_salt('bf')), email_confirmed_at = coalesce(email_confirmed_at, now()), deleted_at = null where id = user_id;
+    update auth.users set email = 'santobarbosa@login.nexora-farming.com', encrypted_password = crypt('MozaGeswalriga.06', gen_salt('bf')), email_confirmed_at = coalesce(email_confirmed_at, now()), deleted_at = null where id = user_id;
   end if;
   insert into public.profiles(id, username, role) values (user_id, 'santobarbosa', 'admin')
     on conflict (username) do update set id = excluded.id, role = 'admin';

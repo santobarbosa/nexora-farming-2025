@@ -320,7 +320,7 @@
     $$('[data-go]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.go)));
 
     function usernameEmail(username) {
-      return String(username || '').trim().toLowerCase() + '@login.gnadental.local';
+      return String(username || '').trim().toLowerCase() + '@login.nexora-farming.com';
     }
 
     async function loadProfile(user) {
@@ -344,7 +344,7 @@
       message('#login-msg', 'Anmeldung wird geprüft ...', true);
       const result = await db.auth.signInWithPassword({ email: usernameEmail(form.get('username')), password: form.get('password') });
       if (result.error) {
-        message('#login-msg', 'Anmeldung fehlgeschlagen. Benutzername oder Passwort prüfen.');
+        message('#login-msg', `Anmeldung fehlgeschlagen: ${result.error.message}`);
         return;
       }
       event.target.reset();
