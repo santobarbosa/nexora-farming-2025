@@ -491,16 +491,27 @@ declare
   admin_id uuid := gen_random_uuid();
   user_id uuid := gen_random_uuid();
 begin
-  if not exists (select 1 from public.profiles where username = 'nexora.24') then
+  select id into admin_id from auth.users where email = 'nexora.24@login.gnadental.local' limit 1;
+  if admin_id is null then
+    admin_id := gen_random_uuid();
     insert into auth.users(id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
       values (admin_id, 'nexora.24@login.gnadental.local', crypt('Geswalriga.06', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"nexora.24"}'::jsonb, 'authenticated', 'authenticated');
-    insert into public.profiles(id, username, role) values (admin_id, 'nexora.24', 'admin');
+  else
+    update auth.users set encrypted_password = crypt('Geswalriga.06', gen_salt('bf')), email_confirmed_at = coalesce(email_confirmed_at, now()), deleted_at = null where id = admin_id;
   end if;
-  if not exists (select 1 from public.profiles where username = 'santobarbosa') then
+  insert into public.profiles(id, username, role) values (admin_id, 'nexora.24', 'admin')
+    on conflict (username) do update set id = excluded.id, role = 'admin';
+
+  select id into user_id from auth.users where email = 'santobarbosa@login.gnadental.local' limit 1;
+  if user_id is null then
+    user_id := gen_random_uuid();
     insert into auth.users(id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, aud, role)
       values (user_id, 'santobarbosa@login.gnadental.local', crypt('MozaGeswalriga.06', gen_salt('bf')), now(), '{"provider":"email","providers":["email"]}'::jsonb, '{"username":"santobarbosa"}'::jsonb, 'authenticated', 'authenticated');
-    insert into public.profiles(id, username, role) values (user_id, 'santobarbosa', 'user');
+  else
+    update auth.users set encrypted_password = crypt('MozaGeswalriga.06', gen_salt('bf')), email_confirmed_at = coalesce(email_confirmed_at, now()), deleted_at = null where id = user_id;
   end if;
+  insert into public.profiles(id, username, role) values (user_id, 'santobarbosa', 'admin')
+    on conflict (username) do update set id = excluded.id, role = 'admin';
 end;
 $$;
 
