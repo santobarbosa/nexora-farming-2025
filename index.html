@@ -10,14 +10,25 @@
     *{box-sizing:border-box}body{margin:0;background:var(--paper);color:var(--ink);font:15px/1.5 system-ui,-apple-system,sans-serif}button,input,select{font:inherit}button{cursor:pointer}
     .top{background:var(--green);color:#fff;position:sticky;top:0;z-index:5;box-shadow:0 2px 14px #10281855}.bar{max-width:1240px;margin:auto;padding:18px 22px;display:flex;gap:28px;align-items:center;justify-content:space-between}.brand{font-weight:800;letter-spacing:.04em;white-space:nowrap}.brand small{display:block;color:#b8e6be;font-weight:500;letter-spacing:0}.nav{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}.nav button{border:0;background:transparent;color:#d9f4dc;padding:8px 11px;border-radius:7px}.nav button:hover,.nav button.active{background:#ffffff20;color:#fff}.status{font-size:12px;background:#ffffff15;padding:5px 9px;border-radius:99px;white-space:nowrap}.status.ok{color:#b7f7c0}.status.bad{color:#ffd0ca}
     main{max-width:1240px;margin:auto;padding:34px 22px 70px}.view{display:none}.view.active{display:block;animation:up .25s ease}.hero{background:linear-gradient(120deg,#14532d,#286c3e 55%,#d99025);color:#fff;padding:42px;border-radius:14px;margin-bottom:24px}.hero h1{font-size:clamp(2rem,5vw,4rem);line-height:1;margin:0 0 14px;max-width:700px}.hero p{max-width:620px;color:#e2f3e3}.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:18px}.card{background:#fff;border:1px solid var(--line);border-radius:10px;padding:20px;box-shadow:0 5px 20px #18352309;margin-bottom:18px}.card h2,.card h3{margin:0 0 12px}.eyebrow{color:var(--gold);font-weight:800;text-transform:uppercase;font-size:12px;letter-spacing:.12em}.formgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:13px}.field{display:grid;gap:5px;margin-bottom:12px}.field label{font-size:13px;font-weight:700;color:#46544b}.field input,.field select{width:100%;padding:10px;border:1px solid #cbd7ce;border-radius:6px;background:#fff;color:var(--ink)}.field input:focus,.field select:focus,button:focus{outline:3px solid #22c55e55;outline-offset:2px}.btn{border:0;border-radius:6px;padding:10px 15px;background:var(--green);color:#fff;font-weight:700}.btn:hover{filter:brightness(1.12)}.btn.alt{background:#edf6ed;color:var(--green);border:1px solid #b9d8bc}.btn.warn{background:var(--red)}.actions{display:flex;gap:8px;flex-wrap:wrap}.msg{min-height:22px;color:var(--red);font-weight:600;margin:8px 0 0}.msg.ok{color:var(--green)}.tablewrap{overflow:auto}.table{width:100%;border-collapse:collapse;min-width:620px}.table th,.table td{text-align:left;padding:11px 9px;border-bottom:1px solid var(--line);vertical-align:middle}.table th{font-size:12px;text-transform:uppercase;color:var(--muted);letter-spacing:.05em}.empty{text-align:center;color:var(--muted);padding:24px}.metric{font-size:2rem;font-weight:800;color:var(--green)}.product{display:flex;justify-content:space-between;gap:18px;align-items:center;padding:12px;border:1px solid var(--line);border-radius:10px;background:#fafcf9;margin-bottom:12px}.list{margin:0;padding-left:18px}.tag{display:inline-block;padding:4px 8px;border-radius:999px;font-size:11px;font-weight:700;text-transform:capitalize}.tag.pending{background:#fef3c7;color:#854d0e}.tag.active{background:#dcfce7;color:#166534}.tag.occassion,.tag.occasion{background:#fee2e2;color:#991b1b}.tag.neu{background:#e0f2fe;color:#075985}.money{font-weight:700;color:var(--green)}
+    .auth-screen{position:fixed;inset:0;z-index:20;display:grid;place-items:center;padding:20px;background:#14532d}.auth-screen.hidden{display:none}.auth-card{width:min(430px,100%);background:#fff;border-radius:12px;padding:28px;box-shadow:0 20px 60px #071c0d55}.auth-card h1{margin:0 0 6px}.auth-card p{color:var(--muted)}.user-badge{font-size:12px;color:#d9f4dc}.hidden{display:none!important}
     @keyframes up{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}@media(max-width:760px){.bar{align-items:flex-start;flex-direction:column;gap:12px}.nav{justify-content:flex-start}.hero{padding:28px 22px}main{padding:22px 14px 50px}}
   </style>
 </head>
 <body>
+  <section id="auth-screen" class="auth-screen">
+    <form id="login-form" class="auth-card">
+      <div class="eyebrow">Geschützter Zugang</div>
+      <h1>Bei Gnadental anmelden</h1>
+      <p>Bitte melde dich mit deinem Benutzernamen und Passwort an.</p>
+      <div class="field"><label for="login-username">Benutzername</label><input id="login-username" name="username" autocomplete="username" required></div>
+      <div class="field"><label for="login-password">Passwort</label><input id="login-password" name="password" type="password" autocomplete="current-password" required></div>
+      <button class="btn">Anmelden</button><p id="login-msg" class="msg" role="alert"></p>
+    </form>
+  </section>
   <header class="top">
     <div class="bar">
       <div class="brand">GNADENTAL<small>LS25 ROLEPLAY</small></div>
-      <div id="connection" class="status">Supabase wird verbunden ...</div>
+      <div><div id="connection" class="status">Supabase wird verbunden ...</div><div id="user-badge" class="user-badge"></div></div>
       <nav class="nav" aria-label="Hauptnavigation">
         <button class="active" data-view="home">Start</button>
         <button data-view="citizens">Bürger</button>
@@ -28,7 +39,8 @@
         <button data-view="logistics">Mezzorik Logistik</button>
         <button data-view="catalog">Katalog</button>
         <button data-view="transport-status">Transportstatus</button>
-        <button data-view="admin">Admin</button>
+        <button id="admin-nav" class="hidden" data-view="admin">Admin</button>
+        <button id="logout-button" class="btn alt hidden" type="button">Abmelden</button>
       </nav>
     </div>
   </header>
@@ -246,6 +258,7 @@
       <div class="card"><h2>Katalog verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Artikel</th><th>Preis</th><th>Menge</th><th>Aktionen</th></tr></thead><tbody id="admin-product-list"></tbody></table></div></div>
       <div class="card"><h2>Firmenlager verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>Unternehmen</th><th>Produkt</th><th>Menge</th><th>Preis</th><th>Katalog</th><th>Aktionen</th></tr></thead><tbody id="admin-warehouse-list"></tbody></table></div></div>
       <div class="card"><h2>Bestellungen verwalten</h2><div class="tablewrap"><table class="table"><thead><tr><th>ID</th><th>Konto</th><th>Gesamt</th><th>Status</th><th>Aktionen</th></tr></thead><tbody id="admin-order-list"></tbody></table></div></div>
+      <div class="grid"><div class="card"><h2>Benutzer anlegen</h2><form id="user-form"><div class="field"><label for="new-username">Benutzername</label><input id="new-username" name="username" required minlength="3" maxlength="40" pattern="[A-Za-z0-9._-]+"></div><div class="field"><label for="new-password">Passwort</label><input id="new-password" name="password" type="password" required minlength="8"></div><button class="btn">Benutzer speichern</button></form><p id="user-msg" class="msg"></p></div><div class="card"><h2>Aktivitätslog</h2><div class="tablewrap"><table class="table"><thead><tr><th>Zeit</th><th>Benutzer</th><th>Aktion</th><th>Tabelle</th></tr></thead><tbody id="audit-rows"></tbody></table></div></div></div>
     </section>
   </main>
 
@@ -281,6 +294,8 @@
       selected: null,
       accountMovements: storage.get('gnadental_account_movements', [])
     };
+    let currentUser = null;
+    let currentProfile = null;
 
     const esc = value => String(value ?? '').replace(/[&<>"']/g, char => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
     const money = value => Number(value || 0).toFixed(2) + ' €';
@@ -294,6 +309,8 @@
     }
 
     function navigate(view) {
+      if (!currentUser) return;
+      if (view === 'admin' && currentProfile?.role !== 'admin') return navigate('home');
       $$('.view').forEach(el => el.classList.toggle('active', el.id === view));
       $$('[data-view]').forEach(el => el.classList.toggle('active', el.dataset.view === view));
       window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -301,6 +318,63 @@
 
     $$('[data-view]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.view)));
     $$('[data-go]').forEach(button => button.addEventListener('click', () => navigate(button.dataset.go)));
+
+    function usernameEmail(username) {
+      return String(username || '').trim().toLowerCase() + '@login.gnadental.local';
+    }
+
+    async function loadProfile(user) {
+      if (!user) return null;
+      const result = await db.from('profiles').select('username, role').eq('id', user.id).single();
+      if (result.error) throw result.error;
+      return result.data;
+    }
+
+    function showAuthenticatedUser() {
+      const isAdmin = currentProfile?.role === 'admin';
+      $('#auth-screen').classList.toggle('hidden', Boolean(currentUser));
+      $('#admin-nav').classList.toggle('hidden', !isAdmin);
+      $('#logout-button').classList.toggle('hidden', !currentUser);
+      $('#user-badge').textContent = currentProfile ? `${currentProfile.username} · ${isAdmin ? 'Admin' : 'Benutzer'}` : '';
+    }
+
+    $('#login-form').addEventListener('submit', async event => {
+      event.preventDefault();
+      const form = new FormData(event.target);
+      message('#login-msg', 'Anmeldung wird geprüft ...', true);
+      const result = await db.auth.signInWithPassword({ email: usernameEmail(form.get('username')), password: form.get('password') });
+      if (result.error) {
+        message('#login-msg', 'Anmeldung fehlgeschlagen. Benutzername oder Passwort prüfen.');
+        return;
+      }
+      event.target.reset();
+      message('#login-msg', '', true);
+    });
+
+    $('#logout-button').addEventListener('click', () => db.auth.signOut());
+
+    $('#user-form').addEventListener('submit', async event => {
+      event.preventDefault();
+      if (currentProfile?.role !== 'admin') return;
+      const form = new FormData(event.target);
+      const result = await db.rpc('create_app_user', { p_username: form.get('username'), p_password: form.get('password') });
+      if (result.error) {
+        message('#user-msg', 'Benutzer konnte nicht angelegt werden: ' + result.error.message);
+        return;
+      }
+      event.target.reset();
+      message('#user-msg', 'Benutzer wurde angelegt und kann sich sofort anmelden.', true);
+      await loadAuditLog();
+    });
+
+    async function loadAuditLog() {
+      if (currentProfile?.role !== 'admin') return;
+      const result = await db.from('audit_log').select('created_at, username, action, table_name').order('created_at', { ascending: false }).limit(100);
+      if (result.error) return;
+      $('#audit-rows').innerHTML = result.data.length
+        ? result.data.map(entry => `<tr><td>${esc(new Date(entry.created_at).toLocaleString('de-DE'))}</td><td>${esc(entry.username || '-')}</td><td>${esc(entry.action)}</td><td>${esc(entry.table_name)}</td></tr>`).join('')
+        : '<tr><td colspan="4" class="empty">Noch keine Aktivitäten.</td></tr>';
+    }
 
     function id(prefix) { return prefix + '-' + String(Math.floor(Math.random() * 10000)).padStart(4, '0'); }
 
@@ -1199,17 +1273,40 @@
       if (status === 'SUBSCRIBED') setConnection('Supabase verbunden · Realtime aktiv');
     }));
 
+    db.auth.onAuthStateChange((_event, session) => {
+      setTimeout(async () => {
+        currentUser = session?.user || null;
+        currentProfile = null;
+        showAuthenticatedUser();
+        if (!currentUser) {
+          navigate('home');
+          setConnection('Bitte anmelden');
+          return;
+        }
+        try {
+          currentProfile = await loadProfile(currentUser);
+          showAuthenticatedUser();
+          await loadAll();
+          await loadAuditLog();
+        } catch (error) {
+          setConnection('Profil konnte nicht geladen werden: ' + error.message, true);
+          await db.auth.signOut();
+        }
+      }, 0);
+    });
+
     async function start() {
       setConnection('Supabase wird verbunden ...');
-      try {
-        const result = await db.from('citizens').select('citizen_id').limit(1);
-        if (result.error) setConnection('Supabase-Fehler: ' + result.error.message, true);
-        else setConnection('Supabase verbunden · Realtime startet');
-      } catch (error) {
-        setConnection('Supabase-Fehler: ' + error.message, true);
+      const result = await db.auth.getSession();
+      if (result.error) {
+        setConnection('Supabase-Fehler: ' + result.error.message, true);
+        return;
       }
-      await loadAll();
-      updateEntityDropdowns();
+      if (!result.data.session) {
+        currentUser = null;
+        showAuthenticatedUser();
+        setConnection('Bitte anmelden');
+      }
     }
 
     start();
